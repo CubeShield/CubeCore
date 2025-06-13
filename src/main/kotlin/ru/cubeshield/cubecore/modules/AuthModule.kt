@@ -10,6 +10,7 @@ import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.server.network.ServerPlayerInteractionManager
 import net.minecraft.text.Style
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.api.ApiResponse
 import ru.cubeshield.cubecore.api.dto.PlayerReadDto
@@ -24,9 +25,7 @@ class AuthModule: ICubeModule {
     override val name = "Auth Module"
     override val description = "Модуль отвечающий за авторизацию игроков на сервере, а также обработку игровых сессий"
 
-    private var activeSessions = ConcurrentHashMap<String, SessionEntity>()
     private var cachedPlayersId = ConcurrentHashMap<String, String>()
-
 
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
         eventBus.subscribe<PlayerJoinedEvent> { (player) ->
@@ -59,20 +58,22 @@ class AuthModule: ICubeModule {
                 }
                 if (!apiPlayer.telegramLinked) {
                     player.server.execute {
-                        player.networkHandler.disconnect(Text.literal("Продолжите авторизацию в Телеграм Боте @cubeshieldbot\nВаш код аунтефикации: ${apiPlayer.authCode}"))
+                        player.networkHandler.disconnect(Text.literal("Продолжите авторизацию в Телеграм Боте @cubeshieldbot\nВаш код аунтефикации: ${apiPlayer.authCode}").styled { it.withBold(true) })
                     }
                     logger.info("Player $playername has not linked Telegram")
                     return@launch
                 }
                 if (!apiPlayer.trustNewLoginIp && apiPlayer.lastLoginIp != player.ip) {
                     player.server.execute {
-                        player.networkHandler.disconnect(Text.literal("Подтвердите вход с нового IP-Адреса в Телеграм Боте @cubeshieldbot"))
+                        player.networkHandler.disconnect(Text.literal("Подтвердите вход с нового IP-Адреса в Телеграм Боте @cubeshieldbot").styled { it.withBold(true) })
                     }
                     apiClient.warnPlayerNewIp(apiPlayer.id, player.ip)
                     return@launch
                 }
                 if (apiPlayer.trustNewLoginIp) {
                     apiClient.successPlayerNewIp(apiPlayer.id)
+                    player.sendMessage(Text.literal("Вы успешно вошли с нового IP-Адреса").styled { it.withColor(
+                        Formatting.GRAY) })
                 }
                 cachedPlayersId[playername] = apiPlayer.id
                 eventBus.publish(PlayerAuthorized(player, apiPlayer.id, apiPlayer, loginTime))

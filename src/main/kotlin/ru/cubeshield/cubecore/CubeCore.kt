@@ -15,31 +15,32 @@ import org.slf4j.LoggerFactory
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.event.*
-import ru.cubeshield.cubecore.modules.AuthModule
-import ru.cubeshield.cubecore.modules.ModuleManager
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.serialization.kotlinx.json.*
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
-import ru.cubeshield.cubecore.domain.PlayerState
-import ru.cubeshield.cubecore.modules.PlayerStateModule
-import ru.cubeshield.cubecore.modules.SessionModule
+import net.minecraft.server.MinecraftServer
+import ru.cubeshield.cubecore.modules.*
 
 class CubeCore : ModInitializer {
     companion object {
-        val MOD_ID = "CubeCore"
-        val LOGGER = LoggerFactory.getLogger(MOD_ID)
+        const val MOD_ID = "CubeCore"
+        val LOGGER: org.slf4j.Logger = LoggerFactory.getLogger(MOD_ID)
+        val banner = this::class.java.getResourceAsStream("/banner.txt")
+            ?.bufferedReader()
+            ?.use { it.readText() }
+        lateinit var minecraftServer: MinecraftServer
     }
 
-    lateinit var config: ModConfig
-    lateinit var eventBus: EventBus
-    lateinit var apiClient: ApiClient
-    lateinit var moduleManager: ModuleManager
+    private lateinit var config: ModConfig
+    private lateinit var eventBus: EventBus
+    private lateinit var apiClient: ApiClient
+    private lateinit var moduleManager: ModuleManager
 
-    val mainScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val mainScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     override fun onInitialize() {
         LOGGER.info("Initializing CubeCore...")
+        LOGGER.info("\n$banner")
 
         config = ModConfig.loadConfig()
         LOGGER.info("Config loaded!")
@@ -73,12 +74,15 @@ class CubeCore : ModInitializer {
 
         moduleManager.registerModule(AuthModule::class)
         moduleManager.registerModule(SessionModule::class)
+        moduleManager.registerModule(PlayerAfkModule::class)
         moduleManager.registerModule(PlayerStateModule::class)
 
+        LOGGER.info("Initializing all modules")
         moduleManager.initializeAll()
 
         ServerLifecycleEvents.SERVER_STARTING.register{server ->
             eventBus.publish(ServerStartingEvent(server))
+            minecraftServer = server
         }
 
         ServerLifecycleEvents.SERVER_STARTED.register{server ->

@@ -18,5 +18,5 @@ data class PlayerUnauthorized(val player: ServerPlayerEntity, val playerId: Stri
 
 data class PlayerActivityEvent(val player: ServerPlayerEntity): Event
 
-data class PlayerWentAfkEvent(val player: ServerPlayerEntity): Event
-data class PlayerReturnedFromAfkEvent(val player: ServerPlayerEntity): Event
+data class PlayerWentAfkEvent(val player: ServerPlayerEntity, val fromMillis: Long): Event
+data class PlayerReturnedFromAfkEvent(val player: ServerPlayerEntity, val fromMillis: Long, val untilMillis: Long): Event

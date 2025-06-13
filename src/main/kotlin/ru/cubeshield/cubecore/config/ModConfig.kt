@@ -22,12 +22,18 @@ data class ModConfig (
 
     @Serializable
     data class ModuleConfigs (
-        val authModule: AuthModuleConfig = AuthModuleConfig()
+        val authModule: AuthModuleConfig = AuthModuleConfig(),
+        val playerAfkModule: PlayerAfkModuleConfig = PlayerAfkModuleConfig()
     )
 
     @Serializable
     data class AuthModuleConfig(
         val enable: Boolean = true
+    )
+
+    @Serializable
+    data class PlayerAfkModuleConfig(
+        val afkTimeoutSeconds: Int = 3 * 60
     )
 
     companion object {
