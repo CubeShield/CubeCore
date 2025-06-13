@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "cubecore",
+  "version": "${version}",
+  "name": "CubeCore",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/cubecore/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "fabric-datagen": [
+      "ru.cubeshield.cubecore.client.CubeCoreDataGenerator"
+    ],
+    "main": [
+      "ru.cubeshield.cubecore.CubeCore"
+    ]
+  },
+  "mixins": [
+    "cubecore.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-language-kotlin": ">=${kotlin_loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
