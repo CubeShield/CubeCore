@@ -122,4 +122,11 @@ class ApiClient (
             setBody(sessionCreateDto)
         }
     }
+
+    suspend fun createPlayerBankTransaction(playerId: String, amount: Int): ApiResponse<Unit> {
+        return safeApiCall("/players/${playerId}/bank/${amount}") {
+            method = HttpMethod.Post
+        }
+    }
+
 }

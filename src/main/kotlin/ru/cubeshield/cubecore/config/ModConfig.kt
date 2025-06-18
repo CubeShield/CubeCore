@@ -24,12 +24,23 @@ data class ModConfig (
     @Serializable
     data class ModuleConfigs (
         val authModule: AuthModuleConfig = AuthModuleConfig(),
-        val playerAfkModule: PlayerAfkModuleConfig = PlayerAfkModuleConfig()
+        val playerAfkModule: PlayerAfkModuleConfig = PlayerAfkModuleConfig(),
+        val bankModule: BankModuleConfig = BankModuleConfig()
     )
 
     @Serializable
     data class AuthModuleConfig(
         val enable: Boolean = true
+    )
+
+    @Serializable
+    data class BankModuleConfig(
+        val fromX: Int = 0,
+        val toX: Int = 0,
+        val fromY: Int = 0,
+        val toY: Int = 0,
+        val fromZ: Int = 0,
+        val toZ: Int = 0
     )
 
     @Serializable
