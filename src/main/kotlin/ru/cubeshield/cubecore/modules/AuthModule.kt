@@ -60,7 +60,7 @@ class AuthModule: ICubeModule {
                     player.server.execute {
                         player.networkHandler.disconnect(Text.literal("Продолжите авторизацию в Телеграм Боте @cubeshieldbot\nВаш код аунтефикации: ${apiPlayer.authCode}").styled { it.withBold(true) })
                     }
-                    logger.info("Player $playername has not linked Telegram")
+                    logger.info("Player $playername (${apiPlayer.id}) has not linked Telegram")
                     return@launch
                 }
                 if (!apiPlayer.trustNewLoginIp && apiPlayer.lastLoginIp != player.ip) {
