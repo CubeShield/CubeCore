@@ -37,79 +37,46 @@ class SpitModule : ICubeModule {
     private fun registerCommands(dispatcher: CommandDispatcher<ServerCommandSource>) {
         dispatcher.register(
             CommandManager.literal("spit")
-                // Команда доступна, если у игрока есть право ИЛИ он является оператором (уровень 2+)
                 .requires { source -> Permissions.check(source, PREMIUM_PERMISSION, source.hasPermissionLevel(2)) }
-
-                // Вариант 1: /spit (без аргументов)
                 .executes { context ->
                     val spitter = context.source.playerOrThrow
-                    executeSpit(context.source, spitter, null) // Цель не указана
+                    executeSpit(context.source, spitter)
                     1
                 }
 
-                // Вариант 2: /spit <player>
-                .then(
-                    CommandManager.argument("target", EntityArgumentType.player())
-                        .executes { context ->
-                            val spitter = context.source.playerOrThrow
-                            val target = EntityArgumentType.getPlayer(context, "target")
-                            executeSpit(context.source, spitter, target) // Указываем цель
-                            1
-                        }
-                )
         )
     }
 
-    /**
-     * Основная логика плевка: создает звук и частицы.
-     * @param source Источник команды.
-     * @param spitter Игрок, который плюет.
-     * @param target Цель плевка (может быть null).
-     */
-    private fun executeSpit(source: ServerCommandSource, spitter: ServerPlayerEntity, target: ServerPlayerEntity?) {
-        val world = spitter.world
-        val eyePos = spitter.getEyePos() // Позиция глаз игрока - отсюда летят частицы
 
-        // 1. Воспроизводим звук плевка ламы для всех рядом
+    private fun executeSpit(source: ServerCommandSource, spitter: ServerPlayerEntity) {
+        val world = spitter.world
+        val eyePos = spitter.eyePos
         world.playSound(
-            null, // null означает, что звук не привязан к конкретному игроку и слышен всем вокруг
+            null,
             eyePos.x, eyePos.y, eyePos.z,
             SoundEvents.ENTITY_LLAMA_SPIT,
             SoundCategory.PLAYERS,
-            1.0f, // Громкость
-            1.0f  // Тон
+            1.0f,
+            1.0f
         )
 
-        // 2. Создаем частицы плевка
-        val lookVec = spitter.getRotationVector() // Направление взгляда игрока
+        val lookVec = spitter.rotationVector
 
-        // Спавним 15 частиц в цикле, чтобы задать им скорость и направление
         for (i in 0..15) {
-            // Добавляем небольшой случайный разброс, чтобы плевок не был идеально ровным
             val randomX = (Random.nextDouble() - 0.5) * 0.3
             val randomY = (Random.nextDouble() - 0.5) * 0.3
             val randomZ = (Random.nextDouble() - 0.5) * 0.3
 
-            // Метод spawnParticles с count = 0 использует следующие три аргумента как вектор скорости
             world.spawnParticles(
-                ParticleTypes.SPIT, // Тип частиц
+                ParticleTypes.SPIT,
                 eyePos.x, eyePos.y, eyePos.z,
-                0, // count
-                lookVec.x + randomX, // Скорость по X
-                lookVec.y + randomY, // Скорость по Y
-                lookVec.z + randomZ, // Скорость по Z
-                0.7 // Множитель скорости
+                0,
+                lookVec.x + randomX,
+                lookVec.y + randomY,
+                lookVec.z + randomZ,
+                0.7
             )
         }
-
-        // 3. Отправляем сообщение в чат
-        val message: Text = if (target != null) {
-            Text.literal("§a${spitter.name.string} §fплюнул(а) в §c${target.name.string}!")
-        } else {
-            Text.literal("§a${spitter.name.string} §fсмачно сплюнул(а) на землю.")
-        }
-
-        source.server.playerManager.broadcast(message, false)
     }
 
     override fun shutdown() {}
