@@ -50,21 +50,21 @@ class AuthModule: ICubeModule {
                     }
                 }
                 if (apiPlayer == null) {
-                    player.server.execute {
+                    player.server?.execute {
                         player.networkHandler.disconnect(Text.literal("Не удалось вас авторизировать"))
                     }
                     logger.warn("Not succeeded in authorization player $playername")
                     return@launch
                 }
                 if (!apiPlayer.telegramLinked) {
-                    player.server.execute {
+                    player.server?.execute {
                         player.networkHandler.disconnect(Text.literal("Продолжите авторизацию в Телеграм Боте @cubeshieldbot\nВаш код аунтефикации: ${apiPlayer.authCode}").styled { it.withBold(true) })
                     }
                     logger.info("Player $playername (${apiPlayer.id}) has not linked Telegram")
                     return@launch
                 }
                 if (!apiPlayer.trustNewLoginIp && apiPlayer.lastLoginIp != player.ip) {
-                    player.server.execute {
+                    player.server?.execute {
                         player.networkHandler.disconnect(Text.literal("Подтвердите вход с нового IP-Адреса в Телеграм Боте @cubeshieldbot").styled { it.withBold(true) })
                     }
                     apiClient.warnPlayerNewIp(apiPlayer.id, player.ip)
