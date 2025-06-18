@@ -78,6 +78,7 @@ class CubeCore : ModInitializer {
         moduleManager.registerModule(PlayerStateModule::class)
         moduleManager.registerModule(FunCommandsModule::class)
         moduleManager.registerModule(SpitModule::class)
+        moduleManager.registerModule(DiscoveryModule::class)
 
         LOGGER.info("Initializing all modules")
         moduleManager.initializeAll()
