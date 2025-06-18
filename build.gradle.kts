@@ -31,9 +31,11 @@ fabricApi {
 }
 
 repositories {
+    mavenCentral()
 }
 
 dependencies {
+    modImplementation("me.lucko:fabric-permissions-api:0.3.1")
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
