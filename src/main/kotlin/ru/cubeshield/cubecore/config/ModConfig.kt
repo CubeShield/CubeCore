@@ -17,6 +17,7 @@ data class ModConfig (
     @Serializable
     data class ApiConfig (
         val baseUrl: String = "https://api.cubeshield.ru",
+        val wsUrl: String = "wss://api.cubeshield.ru/ws/server",
         val apiKey: String = "",
     )
 

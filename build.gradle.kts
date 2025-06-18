@@ -32,9 +32,12 @@ fabricApi {
 
 repositories {
     mavenCentral()
+    maven("https://api.modrinth.com/maven")
+    maven("https://maven.nucleoid.xyz/") { name = "Nucleoid" }
 }
-
 dependencies {
+    modImplementation("maven.modrinth:message-api:0.3.2+1.21.5")
+    modImplementation("eu.pb4:placeholder-api:2.7.0+1.21.6")
     modImplementation("me.lucko:fabric-permissions-api:0.3.1")
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
