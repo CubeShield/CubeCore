@@ -77,7 +77,7 @@ class AuthModule: ICubeModule {
                 }
                 cachedPlayersId[playername] = apiPlayer.id
                 eventBus.publish(PlayerAuthorized(player, apiPlayer.id, apiPlayer, loginTime))
-                logger.info("Player $playername has been authorized")
+                logger.info("Player $playername (${apiPlayer.id}) has been authorized")
             }
         }
 
@@ -85,7 +85,7 @@ class AuthModule: ICubeModule {
             val playername = player.gameProfile.name
             val playerId = cachedPlayersId[playername] ?: return@subscribe
             eventBus.publish(PlayerUnauthorized(player, playerId))
-            logger.info("Player $playername has been unauthorized")
+            logger.info("Player $playername ($playerId) has been unauthorized")
         }
     }
 
