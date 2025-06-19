@@ -36,10 +36,10 @@ data class ModConfig (
     @Serializable
     data class BankModuleConfig(
         val fromX: Int = 0,
-        val toX: Int = 0,
         val fromY: Int = 0,
-        val toY: Int = 0,
         val fromZ: Int = 0,
+        val toX: Int = 0,
+        val toY: Int = 0,
         val toZ: Int = 0
     )
 

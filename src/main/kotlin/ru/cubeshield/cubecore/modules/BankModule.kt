@@ -16,7 +16,9 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.text.Text
+import net.minecraft.util.math.BlockPos
 import ru.cubeshield.cubecore.api.ApiResponse
+import kotlin.math.max
 import kotlin.math.min
 
 
@@ -32,13 +34,40 @@ class BankModule : ICubeModule {
             cachedPlayersIds[player.gameProfile.name] = playerId
         }
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
-            registerCommands(dispatcher, apiClient, modScope)
+            registerCommands(dispatcher, apiClient, config, modScope)
         }
     }
 
-    private fun registerCommands(dispatcher: CommandDispatcher<ServerCommandSource>, apiClient: ApiClient, modScope: CoroutineScope) {
+    private fun isPlayerInBankArea(player: ServerPlayerEntity, config: ModConfig): Boolean {
+        val corner1 = BlockPos(
+            config.modules.bankModule.fromX,
+            config.modules.bankModule.fromY,
+            config.modules.bankModule.fromZ,
+        )
+        val corner2 = BlockPos(
+            config.modules.bankModule.toX,
+            config.modules.bankModule.toY,
+            config.modules.bankModule.toZ,
+        )
+
+        val playerPos = player.blockPos
+
+
+        return playerPos.x >= min(corner1.x, corner2.x) && playerPos.x <= max(corner1.x, corner2.x) &&
+                playerPos.y >= min(corner1.y, corner2.y) && playerPos.y <= max(corner1.y, corner2.y) &&
+                playerPos.z >= min(corner1.z, corner2.z) && playerPos.z <= max(corner1.z, corner2.z)
+    }
+
+    private fun registerCommands(dispatcher: CommandDispatcher<ServerCommandSource>, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
         dispatcher.register(
             CommandManager.literal("bank")
+                .requires { source ->
+                    if (source.player != null) {
+                        isPlayerInBankArea(source.player!!, config)
+                    } else {
+                        false
+                    }
+                }
                 .executes { context ->
                     context.source.sendFeedback({ Text.literal("§cИспользование: /bank <deposit(пополнение)|withdraw(снятие)> <сумма>") }, false)
                     1

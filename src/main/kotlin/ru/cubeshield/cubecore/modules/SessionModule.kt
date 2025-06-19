@@ -20,7 +20,7 @@ class SessionModule : ICubeModule {
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
         eventBus.subscribe<PlayerAuthorized> { (player, playerId, _, loginTime) ->
             val playername = player.gameProfile.name
-            logger.info("Creating new session for player $playername")
+            logger.info("Creating new session for player $playername (${player.ip})")
             activeSessions[playername] = SessionEntity(
                 playerId = playerId,
                 loginTime = loginTime,
@@ -49,7 +49,7 @@ class SessionModule : ICubeModule {
                 playerSession.afkSeconds += ((now-fromMillis)/1000).toInt()
                 afkFromMillis.remove(playername)
             }
-            logger.info("Closing session for player $playername")
+            logger.info("Closing session for player $playername (${playerSession.ipAddress})")
             val sessionCreateDto = SessionCreateDto.fromEntity(playerSession)
             modScope.launch {
                 apiClient.createSession(playerId, sessionCreateDto)
