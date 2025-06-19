@@ -49,7 +49,7 @@ class ItemFlexModule : ICubeModule {
                     val mainHandStack: ItemStack = sender.mainHandStack
 
                     if (mainHandStack.isEmpty) {
-                        MessageUtil.send(source.player!!,"Ты должен держать предмет в руке, чтобы флексить!", true)
+                        MessageUtil.send(source.player!!,"Ты должен держать предмет в руке, чтобы флексить!", true, false)
                         return@executes 0
                     }
 

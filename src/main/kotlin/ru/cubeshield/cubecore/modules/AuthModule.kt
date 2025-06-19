@@ -18,6 +18,7 @@ import ru.cubeshield.cubecore.api.dto.SessionCreateDto
 import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.domain.SessionEntity
 import ru.cubeshield.cubecore.event.*
+import ru.cubeshield.cubecore.utils.MessageUtil
 import java.util.concurrent.ConcurrentHashMap
 
 class AuthModule: ICubeModule {
@@ -72,8 +73,7 @@ class AuthModule: ICubeModule {
                 }
                 if (apiPlayer.trustNewLoginIp) {
                     apiClient.successPlayerNewIp(apiPlayer.id)
-                    player.sendMessage(Text.literal("Вы успешно вошли с нового IP-Адреса").styled { it.withColor(
-                        Formatting.GRAY) })
+                    MessageUtil.send(player, "Вы успешно вошли с нового IP-Адреса", false, false)
                 }
                 cachedPlayersId[playername] = apiPlayer.id
                 eventBus.publish(PlayerAuthorized(player, apiPlayer.id, apiPlayer, loginTime))

@@ -63,7 +63,7 @@ class BankModule : ICubeModule {
         dispatcher.register(
             CommandManager.literal("bank")
                 .executes { context ->
-                    context.source.player?.let { MessageUtil.send(it, "Использование: /bank <deposit (пополнение) | withdraw (снятие)> <сумма>", true) }
+                    context.source.player?.let { MessageUtil.send(it, "Использование: /bank <deposit (пополнение) | withdraw (снятие)> <сумма>", true, false) }
                     1
                 }
                 .then(
@@ -73,7 +73,7 @@ class BankModule : ICubeModule {
                                 .executes { context ->
                                     if (context.source.player == null) return@executes 1
                                     if (!isPlayerInBankArea(context.source.player!!, config)) {
-                                        MessageUtil.send(context.source.player!!, "Использование: /bank <deposit (пополнение) | withdraw (снятие)> <сумма>", true)
+                                        MessageUtil.send(context.source.player!!, "Использование: /bank <deposit (пополнение) | withdraw (снятие)> <сумма>", true, false)
                                         return@executes 1
                                     }
                                     val sender = context.source.playerOrThrow
@@ -90,7 +90,7 @@ class BankModule : ICubeModule {
                                 .executes { context ->
                                     if (context.source.player == null) return@executes 1
                                     if (!isPlayerInBankArea(context.source.player!!, config)) {
-                                        MessageUtil.send(context.source.player!!, "Использование: /bank <deposit (пополнение) | withdraw (снятие)> <сумма>", true)
+                                        MessageUtil.send(context.source.player!!, "Использование: /bank <deposit (пополнение) | withdraw (снятие)> <сумма>", true, false)
                                         return@executes 1
                                     }
                                     val sender = context.source.playerOrThrow

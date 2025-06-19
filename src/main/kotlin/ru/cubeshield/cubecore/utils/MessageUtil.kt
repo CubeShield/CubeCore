@@ -17,12 +17,14 @@ object MessageUtil {
             .append(Text.literal("♦ ").setStyle(Style.EMPTY.withColor(color)))
             .append(Text.literal(text).setStyle(Style.EMPTY.withColor(baseColor)))
     }
-    fun send(player: PlayerEntity, text: String, isError: Boolean = false) {
+    fun send(player: PlayerEntity, text: String, isError: Boolean = false, withSound: Boolean = true) {
         player.sendMessage(createMessage(text, isError), false)
+        if (!withSound) return
         player.playSoundToPlayer(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0f, 1.0f)
     }
-    fun send(player: ServerPlayerEntity, text: String, isError: Boolean = false) {
+    fun send(player: ServerPlayerEntity, text: String, isError: Boolean = false, withSound: Boolean = true) {
         player.sendMessage(createMessage(text, isError), false)
+        if (!withSound) return
         player.playSoundToPlayer(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0f, 1.0f)
     }
 }

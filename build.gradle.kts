@@ -35,24 +35,34 @@ repositories {
     maven("https://api.modrinth.com/maven")
     maven("https://maven.nucleoid.xyz/") { name = "Nucleoid" }
 }
+
+val shade: Configuration by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 dependencies {
     modImplementation("maven.modrinth:message-api:0.3.2+1.21.5")
     modImplementation("eu.pb4:placeholder-api:2.7.0+1.21.6")
     modImplementation("me.lucko:fabric-permissions-api:0.3.1")
-    implementation("io.ktor:ktor-client-core:$ktor_version")
-    implementation("io.ktor:ktor-client-cio:$ktor_version")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
-    implementation("io.ktor:ktor-client-logging:$ktor_version")
-    implementation("io.ktor:ktor-client-resources:$ktor_version")
-    implementation("io.ktor:ktor-client-json:$ktor_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+
+    shade("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+    shade("io.ktor:ktor-client-core:$ktor_version")
+    shade("io.ktor:ktor-client-cio:$ktor_version")
+    shade("io.ktor:ktor-client-content-negotiation:$ktor_version")
+    shade("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+    shade("io.ktor:ktor-client-logging:$ktor_version")
+    shade("io.ktor:ktor-client-resources:$ktor_version")
+    shade("io.ktor:ktor-client-json:$ktor_version")
+
     minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
     mappings("net.fabricmc:yarn:${project.property("yarn_mappings")}:v2")
     modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 }
+
+configurations.implementation.get().extendsFrom(shade)
 
 tasks.processResources {
     inputs.property("version", project.version)
@@ -82,6 +92,10 @@ tasks.withType<KotlinCompile>().configureEach {
 tasks.jar {
     from("LICENSE") {
         rename { "${it}_${project.base.archivesName}" }
+    }
+
+    from(shade.map { if (it.isDirectory) it else zipTree(it) }) {
+        exclude("META-INF/**")
     }
 }
 

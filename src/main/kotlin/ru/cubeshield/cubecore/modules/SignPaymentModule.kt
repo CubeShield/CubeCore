@@ -46,7 +46,7 @@ class SignPaymentModule : ICubeModule {
             val lastClickTime = playerCooldowns[player.gameProfile.name]
 
             if (lastClickTime != null && (currentTime - lastClickTime) < COOLDOWN_DURATION_MS) {
-                MessageUtil.send(player, "Пожалуйста подождите...")
+                MessageUtil.send(player, "Пожалуйста подождите...", false, false)
                 return@register ActionResult.SUCCESS
             }
 
@@ -69,11 +69,11 @@ class SignPaymentModule : ICubeModule {
                                     fromPlayerId = result.data.id
                                 }
                                 is ApiResponse.Error -> {
-                                    MessageUtil.send(player, "Игрока с таким ником не существует")
+                                    MessageUtil.send(player, "Игрока с таким ником не существует", true, false)
                                 }
                             }
                             if (fromPlayerId == null ) return@launch
-                            MessageUtil.send(player, "Обработка платежа...")
+                            MessageUtil.send(player, "Обработка платежа...", false, false)
                             when (val result = apiClient.createAutoPayBill(fromPlayerId, BillCreateDto(
                                 toPlayerId = toPlayerId,
                                 amount = amount,
@@ -82,7 +82,7 @@ class SignPaymentModule : ICubeModule {
                             ))) {
                                 is ApiResponse.Success -> {}
                                 is ApiResponse.Error -> {
-                                    MessageUtil.send(player, "Недостаточно средств")
+                                    MessageUtil.send(player, "Недостаточно средств", true, false)
                                 }
                             }
                         }
