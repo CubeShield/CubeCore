@@ -28,6 +28,9 @@ class SignPaymentModule : ICubeModule {
 
     private var cachedPlayersIds = ConcurrentHashMap<String, String>()
 
+    private val playerCooldowns = ConcurrentHashMap<String, Long>()
+    private val COOLDOWN_DURATION_MS = 1500L
+
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
         eventBus.subscribe<PlayerAuthorized> { (player, playerId, _, _) ->
             cachedPlayersIds[player.gameProfile.name] = playerId
@@ -36,6 +39,14 @@ class SignPaymentModule : ICubeModule {
         UseBlockCallback.EVENT.register { player, world, hand, hitResult ->
             if (world.isClient) {
                 return@register ActionResult.PASS
+            }
+
+            val currentTime = System.currentTimeMillis()
+            val lastClickTime = playerCooldowns[player.gameProfile.name]
+
+            if (lastClickTime != null && (currentTime - lastClickTime) < COOLDOWN_DURATION_MS) {
+                player.sendMessage(Text.literal("Охладите свое траханье").formatted(Formatting.GRAY), false)
+                return@register ActionResult.SUCCESS
             }
 
             val toPlayerId = cachedPlayersIds[player.gameProfile.name] ?: return@register ActionResult.PASS
@@ -47,7 +58,9 @@ class SignPaymentModule : ICubeModule {
                 if (matches.any()) {
                     matches.forEach { matchResult ->
                         val (playername, amountString) = matchResult.destructured
+                        if (player.gameProfile.name == playername) return@register ActionResult.PASS
                         val amount = amountString.toIntOrNull() ?: return@register ActionResult.PASS
+                        playerCooldowns[player.gameProfile.name] = currentTime
                         modScope.launch {
                             var fromPlayerId: String? = null
                             when (val result = apiClient.getPlayer(playername)) {
