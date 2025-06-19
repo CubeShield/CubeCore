@@ -129,4 +129,12 @@ class ApiClient (
         }
     }
 
+    suspend fun createAutoPayBill(playerId: String, billCreateDto: BillCreateDto): ApiResponse<Unit> {
+        return safeApiCall("/players/${playerId}/bill/autopay") {
+            method = HttpMethod.Post
+            contentType(ContentType.Application.Json)
+            setBody(billCreateDto)
+        }
+    }
+
 }
