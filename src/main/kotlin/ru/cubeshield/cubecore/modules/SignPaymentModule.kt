@@ -14,6 +14,7 @@ import ru.cubeshield.cubecore.api.ApiResponse
 import ru.cubeshield.cubecore.api.dto.BillCreateDto
 import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.event.*
+import ru.cubeshield.cubecore.utils.MessageUtil
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -45,7 +46,7 @@ class SignPaymentModule : ICubeModule {
             val lastClickTime = playerCooldowns[player.gameProfile.name]
 
             if (lastClickTime != null && (currentTime - lastClickTime) < COOLDOWN_DURATION_MS) {
-                player.sendMessage(Text.literal("Охладите свое траханье").formatted(Formatting.GRAY), false)
+                MessageUtil.send(player, "Пожалуйста подождите...")
                 return@register ActionResult.SUCCESS
             }
 
@@ -68,10 +69,11 @@ class SignPaymentModule : ICubeModule {
                                     fromPlayerId = result.data.id
                                 }
                                 is ApiResponse.Error -> {
-                                    player.sendMessage(Text.literal("Неправильный ник игрока").formatted(Formatting.RED), false)
+                                    MessageUtil.send(player, "Игрока с таким ником не существует")
                                 }
                             }
                             if (fromPlayerId == null ) return@launch
+                            MessageUtil.send(player, "Обработка платежа...")
                             when (val result = apiClient.createAutoPayBill(fromPlayerId, BillCreateDto(
                                 toPlayerId = toPlayerId,
                                 amount = amount,
@@ -80,7 +82,7 @@ class SignPaymentModule : ICubeModule {
                             ))) {
                                 is ApiResponse.Success -> {}
                                 is ApiResponse.Error -> {
-                                    player.sendMessage(Text.literal("Недостаточно средств").formatted(Formatting.RED), false)
+                                    MessageUtil.send(player, "Недостаточно средств")
                                 }
                             }
                         }

@@ -18,6 +18,7 @@ import net.minecraft.item.Items
 import net.minecraft.text.Text
 import net.minecraft.util.math.BlockPos
 import ru.cubeshield.cubecore.api.ApiResponse
+import ru.cubeshield.cubecore.utils.MessageUtil
 import kotlin.math.max
 import kotlin.math.min
 
@@ -61,15 +62,8 @@ class BankModule : ICubeModule {
     private fun registerCommands(dispatcher: CommandDispatcher<ServerCommandSource>, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
         dispatcher.register(
             CommandManager.literal("bank")
-                .requires { source ->
-                    if (source.player != null) {
-                        isPlayerInBankArea(source.player!!, config)
-                    } else {
-                        false
-                    }
-                }
                 .executes { context ->
-                    context.source.sendFeedback({ Text.literal("§cИспользование: /bank <deposit(пополнение)|withdraw(снятие)> <сумма>") }, false)
+                    context.source.player?.let { MessageUtil.send(it, "Использование: /bank <deposit (пополнение) | withdraw (снятие)> <сумма>", true) }
                     1
                 }
                 .then(
@@ -77,6 +71,11 @@ class BankModule : ICubeModule {
                         .then(
                             CommandManager.argument("amount", IntegerArgumentType.integer(1))
                                 .executes { context ->
+                                    if (context.source.player == null) return@executes 1
+                                    if (!isPlayerInBankArea(context.source.player!!, config)) {
+                                        MessageUtil.send(context.source.player!!, "Использование: /bank <deposit (пополнение) | withdraw (снятие)> <сумма>", true)
+                                        return@executes 1
+                                    }
                                     val sender = context.source.playerOrThrow
                                     val amount = IntegerArgumentType.getInteger(context, "amount")
                                     handleDeposit(sender, amount, apiClient, modScope)
@@ -89,6 +88,11 @@ class BankModule : ICubeModule {
                         .then(
                             CommandManager.argument("amount", IntegerArgumentType.integer(1))
                                 .executes { context ->
+                                    if (context.source.player == null) return@executes 1
+                                    if (!isPlayerInBankArea(context.source.player!!, config)) {
+                                        MessageUtil.send(context.source.player!!, "Использование: /bank <deposit (пополнение) | withdraw (снятие)> <сумма>", true)
+                                        return@executes 1
+                                    }
                                     val sender = context.source.playerOrThrow
                                     val amount = IntegerArgumentType.getInteger(context, "amount")
                                     handleWithdraw(sender, amount, apiClient, modScope)
@@ -104,7 +108,7 @@ class BankModule : ICubeModule {
         val totalOre = player.inventory.count(Items.DIAMOND_ORE) + player.inventory.count(Items.DEEPSLATE_DIAMOND_ORE)
 
         if (totalOre < amount) {
-            player.sendMessage(Text.literal("§cУ вас недостаточно алмазной руды. Требуется: $amount, найдено: $totalOre."), false)
+            MessageUtil.send(player, "У вас недостаточно алмазной руды. Требуется: $amount, найдено: $totalOre", true)
             return
         }
 
@@ -120,7 +124,6 @@ class BankModule : ICubeModule {
             }
         }
 
-        player.inventory.remove({ it.isOf(Items.DIAMOND_ORE) }, amount, player.inventory)
 
         modScope.launch {
             apiClient.createPlayerBankTransaction(playerId, amount)

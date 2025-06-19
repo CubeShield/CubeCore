@@ -21,6 +21,7 @@ import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.config.accentColor
 import ru.cubeshield.cubecore.config.baseColor
 import ru.cubeshield.cubecore.event.*
+import ru.cubeshield.cubecore.utils.MessageUtil
 import kotlin.random.Random
 
 
@@ -48,10 +49,7 @@ class ItemFlexModule : ICubeModule {
                     val mainHandStack: ItemStack = sender.mainHandStack
 
                     if (mainHandStack.isEmpty) {
-                        source.sendError(
-                            Text.literal("Ты должен держать предмет в руке, чтобы флексить!")
-                                .setStyle(Style.EMPTY.withColor(Formatting.RED))
-                        )
+                        MessageUtil.send(source.player!!,"Ты должен держать предмет в руке, чтобы флексить!", true)
                         return@executes 0
                     }
 

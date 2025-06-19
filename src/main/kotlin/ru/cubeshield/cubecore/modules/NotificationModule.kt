@@ -12,13 +12,10 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.server.MinecraftServer
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
-import net.minecraft.text.Style
-import net.minecraft.text.Text
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.config.ModConfig
-import ru.cubeshield.cubecore.config.accentColor
-import ru.cubeshield.cubecore.config.baseColor
 import ru.cubeshield.cubecore.event.*
+import ru.cubeshield.cubecore.utils.MessageUtil
 
 object ServerHolder {
     var server: MinecraftServer? = null
@@ -89,14 +86,8 @@ class NotificationModule : ICubeModule {
             val notification = Json.decodeFromString<WSNotification>(text)
             server.execute {
                 val player = server.playerManager.getPlayer(notification.toPlayer)
-
-                val message = Text.literal("")
-                    .append(Text.literal("♦ ").setStyle(Style.EMPTY.withColor(accentColor)))
-                    .append(Text.literal(notification.message).setStyle(Style.EMPTY.withColor(baseColor)))
-
                 if (player != null) {
-                    player.sendMessage(message)
-                    player.playSoundToPlayer(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0f, 1.0f)
+                    MessageUtil.send(player, notification.message)
                 }
                 else {
                     logger.info("Player '${notification.toPlayer}' not found, notification not delivered")
