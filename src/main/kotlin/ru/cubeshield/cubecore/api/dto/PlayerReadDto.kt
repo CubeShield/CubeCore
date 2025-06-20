@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class PlayerReadDto(
     val id: String,
     val playername: String,
-    @SerialName("telegram_id") val telegramId: Int,
+    @SerialName("telegram_id") val telegramId: Long,
     @SerialName("telegram_linked") val telegramLinked: Boolean,
     @SerialName("account_name") val accountName: String,
     val skin: String,
