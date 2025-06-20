@@ -2,6 +2,7 @@ package ru.cubeshield.cubecore.modules
 
 import com.mojang.authlib.properties.Property
 import kotlinx.coroutines.*
+import net.minecraft.command.CommandExecutionContext
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.PlayerManager
 import net.minecraft.server.network.ServerPlayerEntity
@@ -9,6 +10,7 @@ import ru.cubeshield.cubecore.CubeCore
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.event.*
+import kotlin.random.Random
 
 
 class SkinModule : ICubeModule {
@@ -23,13 +25,14 @@ class SkinModule : ICubeModule {
 
             val playername = player.gameProfile.name
             val skinType = if (apiPlayer.isSlim) {"slim"} else {"classic"}
-            val commandString = "skin set web $skinType ${apiPlayer.skin} $playername"
+            val randomInt = Random.nextInt()
+            val commandLoadString = "skin set web $skinType \"${apiPlayer.skin}?q=$randomInt\" $playername"
 
             val server = player.server ?: return@subscribe
             server.execute {
                 try {
                     val source = server.commandSource
-                    server.commandManager.dispatcher.execute(commandString, source)
+                    server.commandManager.dispatcher.execute(commandLoadString, source)
 
                     logger.info("Skin for $playername (${apiPlayer.id}) has handled")
                 } catch (e: Exception) {
@@ -37,8 +40,8 @@ class SkinModule : ICubeModule {
                 }
             }
         }
-
     }
+
 
     override fun shutdown() {}
 }

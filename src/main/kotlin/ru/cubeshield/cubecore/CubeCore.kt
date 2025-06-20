@@ -77,6 +77,7 @@ class CubeCore : ModInitializer {
         moduleManager.registerModule(PlayerAfkModule::class)
         moduleManager.registerModule(PlayerStateModule::class)
         moduleManager.registerModule(FunCommandsModule::class)
+        moduleManager.registerModule(SkinModule::class)
         moduleManager.registerModule(SpitModule::class)
         moduleManager.registerModule(DiscoveryModule::class)
         moduleManager.registerModule(NotificationModule::class)
