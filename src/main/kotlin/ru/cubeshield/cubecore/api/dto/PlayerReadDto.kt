@@ -11,6 +11,8 @@ data class PlayerReadDto(
     @SerialName("telegram_linked") val telegramLinked: Boolean,
     @SerialName("account_name") val accountName: String,
     val skin: String,
+    @SerialName("is_slim") val isSlim: Boolean,
+    @SerialName("is_premium") val isPremium: Boolean,
     @SerialName("auth_code") val authCode: String,
     val role: Int,
     val state: String,
