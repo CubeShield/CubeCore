@@ -1,12 +1,19 @@
 package ru.cubeshield.cubecore.modules
 
+import eu.pb4.placeholders.api.PlaceholderResult
+import eu.pb4.placeholders.api.Placeholders
 import kotlinx.coroutines.*
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.PlayerManager
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Style
+import net.minecraft.text.Text
+import net.minecraft.util.Identifier
 import ru.cubeshield.cubecore.CubeCore
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.config.ModConfig
+import ru.cubeshield.cubecore.config.accentColor
+import ru.cubeshield.cubecore.config.afkColor
 import ru.cubeshield.cubecore.event.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -16,10 +23,13 @@ class PlayerStateModule : ICubeModule {
     override val description = "Модуль, отвечающий за отслеживания состояния игрока (Offline/Online/Afk)"
 
     private var cachedPlayersId = ConcurrentHashMap<String, String>()
+    private var cachedPlayersPremium = ConcurrentHashMap<String, Boolean>()
+    private var afkPlayers = ConcurrentHashMap.newKeySet<String>()
 
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
-        eventBus.subscribe<PlayerAuthorized> { (player, playerId, _, _) ->
+        eventBus.subscribe<PlayerAuthorized> { (player, playerId, apiPlayer, _) ->
             cachedPlayersId[player.gameProfile.name] = playerId
+            cachedPlayersPremium[player.gameProfile.name] = apiPlayer.isPremium
             modScope.launch {
                 apiClient.setPlayerStateOnline(playerId)
             }
@@ -34,6 +44,7 @@ class PlayerStateModule : ICubeModule {
 
         eventBus.subscribe<PlayerWentAfkEvent> { (player) ->
             val playerId = cachedPlayersId[player.gameProfile.name] ?: return@subscribe
+            afkPlayers.add(player.gameProfile.name)
             modScope.launch {
                 apiClient.setPlayerStateAfk(playerId)
             }
@@ -41,9 +52,30 @@ class PlayerStateModule : ICubeModule {
 
         eventBus.subscribe<PlayerReturnedFromAfkEvent> { (player) ->
             val playerId = cachedPlayersId[player.gameProfile.name] ?: return@subscribe
+            afkPlayers.remove(player.gameProfile.name)
             modScope.launch {
                 apiClient.setPlayerStateOnline(playerId)
             }
+        }
+
+        Placeholders.register(Identifier.of("cubecore", "prefix-color")) { ctx, args ->
+            if (!ctx.hasPlayer()) {
+                return@register PlaceholderResult.invalid("No player!")
+            }
+            val playername = ctx.player!!.gameProfile.name
+            val prefixColor = if (afkPlayers.contains(playername)) {afkColor} else {accentColor}
+            return@register PlaceholderResult.value(prefixColor.toString())
+        }
+
+
+        Placeholders.register(Identifier.of("cubecore", "prefix")) { ctx, args ->
+            if (!ctx.hasPlayer()) {
+                return@register PlaceholderResult.invalid("No player!")
+            }
+            val playername = ctx.player!!.gameProfile.name
+            val isPremium = cachedPlayersPremium[playername] ?: return@register PlaceholderResult.invalid("No player!")
+            val prefixIcon = if (isPremium) {"★ "} else {"♦ "}
+            return@register PlaceholderResult.value(prefixIcon)
         }
 
     }
