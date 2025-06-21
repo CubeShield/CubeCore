@@ -12,9 +12,12 @@ import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
+import net.minecraft.text.Style
 import net.minecraft.text.Text
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.config.ModConfig
+import ru.cubeshield.cubecore.config.accentColor
+import ru.cubeshield.cubecore.config.baseColor
 import ru.cubeshield.cubecore.event.*
 import kotlin.random.Random
 
@@ -26,10 +29,51 @@ class FunCommandsModule : ICubeModule {
 
     private val PREMIUM_PERMISSION = "cubecore.premium"
 
+    private val agreementMessages = listOf(
+        "Да", "да"
+    )
+
+    private val sosalMessages = listOf(
+        "сосали?", "Сосали?", "сосал?", "Сосал?"
+    )
+
+    private val byteMessages = listOf(
+        "пойдете лутать триал чамберы?",
+        "идем в шахту?",
+        "пойдем в шахту?",
+        "идем на дракона?",
+        "это дом сдк?",
+        "у всех есть еда?",
+        "есть алмазы?",
+        "есть ары ребят?",
+        "всем нужны ресурсы?",
+        "идете в каньон?",
+        "пойдем лутать данжы?",
+        "всем хватает ресов?",
+        "вы готовы искать крепость?",
+        "идем лутать альтушек?",
+        "через 5 минут идем рейдить базу сдк?",
+        "это ваш маяк?",
+        "через 10 минут го?",
+        "вместе идем искать харам?",
+        "это ваша база на горе?",
+        "чо идем в шахту?",
+        "идем искать деревню?",
+        "это база вани?",
+        "это же база сани тут?",
+    )
+
+
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
             registerCommands(dispatcher, modScope)
         }
+    }
+
+    private fun generateChatFormatted(playername: String, message: String): Text {
+        return Text.literal(playername).setStyle(Style.EMPTY.withColor(baseColor))
+            .append(Text.literal(" » ").setStyle(Style.EMPTY.withColor(accentColor)))
+            .append(Text.literal(message).setStyle(Style.EMPTY.withColor(baseColor)))
     }
 
     private fun registerCommands(dispatcher: CommandDispatcher<ServerCommandSource>, modScope: CoroutineScope) {
@@ -64,12 +108,15 @@ class FunCommandsModule : ICubeModule {
 
                             val server = source.server
 
-                            val message1 = Text.literal("<${sender.name.string}> Что ты мне делал?")
-                            val message2 = Text.literal("<${targetPlayer.name.string}> Сосал")
+                            val message1 = generateChatFormatted(sender.gameProfile.name, byteMessages.random())
+                            val message2 = generateChatFormatted(sender.gameProfile.name, sosalMessages.random())
+                            val message3 = generateChatFormatted(targetPlayer.gameProfile.name, agreementMessages.random())
 
                             server.playerManager.broadcast(message1, false)
                             delay(Random.nextLong(1400L, 2300L))
                             server.playerManager.broadcast(message2, false)
+                            delay(Random.nextLong(200L, 400L))
+                            server.playerManager.broadcast(message3, false)
 
                         }
                         1
