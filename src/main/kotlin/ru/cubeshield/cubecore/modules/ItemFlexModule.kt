@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.command.CommandSource
 import net.minecraft.command.argument.EntityArgumentType
 import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.potion.Potions
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
@@ -22,6 +23,7 @@ import ru.cubeshield.cubecore.config.accentColor
 import ru.cubeshield.cubecore.config.baseColor
 import ru.cubeshield.cubecore.event.*
 import ru.cubeshield.cubecore.utils.MessageUtil
+import kotlin.math.min
 import kotlin.random.Random
 
 
@@ -59,13 +61,24 @@ class ItemFlexModule : ICubeModule {
                         accentColor
                     ))
 
+                    var flexItemAmount = 0
+                    for (i in 0 until sender.inventory.size()) {
+                        val stack = sender.inventory.getStack(i)
+                        if (!stack.isOf(mainHandStack.item)) continue
+                        flexItemAmount += stack.count
+                    }
+                    val amountMessage = if (flexItemAmount > 1) {"x$flexItemAmount "} else {""}
+
                     val message = playerNameText
                         .append(Text.literal(" флексит своим предметом ").setStyle(Style.EMPTY.withColor(baseColor)))
+                        .append(Text.literal(amountMessage).setStyle(mainHandStack.toHoverableText().style))
                         .append(mainHandStack.toHoverableText())
 
                     server.playerManager.broadcast(message, false)
+                    server.playerManager.playerList.forEach {player ->
+                        player.playSoundToPlayer(SoundEvents.ENTITY_VILLAGER_CELEBRATE, SoundCategory.PLAYERS, 1.0f, 1.0f)
+                    }
 
-                    source.player?.playSoundToPlayer(SoundEvents.ENTITY_VILLAGER_CELEBRATE, SoundCategory.PLAYERS, 1.0f, 1.0f)
 
                     1
                 }
