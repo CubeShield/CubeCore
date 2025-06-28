@@ -61,6 +61,31 @@ class BankModule : ICubeModule {
 
     private fun registerCommands(dispatcher: CommandDispatcher<ServerCommandSource>, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
         dispatcher.register(
+            CommandManager.literal("balance")
+                .executes { context ->
+                    if (context.source.player == null) return@executes 1
+                    val sender = context.source.playerOrThrow
+                    modScope.launch {
+                        val playerId = cachedPlayersIds[sender.gameProfile.name] ?: return@launch
+                        when (val result = apiClient.getPlayerProfile(playerId)) {
+                            is ApiResponse.Success -> {
+                                var message = "Ваш баланс: ${result.data.balance} АР"
+                                if (result.data.governmentBalance != null) {
+                                    message += " • Государственная казна: ${result.data.governmentBalance} АР"
+                                }
+                                MessageUtil.send(sender, message, false)
+                            }
+                            is ApiResponse.Error -> {
+                                MessageUtil.send(sender, "Не удалось получить ваш баланс", true)
+                            }
+                        }
+
+
+                    }
+                    1
+                }
+        )
+        dispatcher.register(
             CommandManager.literal("bank")
                 .executes { context ->
                     context.source.player?.let { MessageUtil.send(it, "Использование: /bank <deposit (пополнение) | withdraw (снятие)> <сумма>", true, false) }
