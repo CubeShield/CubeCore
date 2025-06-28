@@ -137,4 +137,10 @@ class ApiClient (
         }
     }
 
+    suspend fun getPlayerProfile(playerId: String): ApiResponse<PlayerProfileReadDto> {
+        return safeApiCall("/players/profile/${playerId}") {
+            method = HttpMethod.Get
+        }
+    }
+
 }
