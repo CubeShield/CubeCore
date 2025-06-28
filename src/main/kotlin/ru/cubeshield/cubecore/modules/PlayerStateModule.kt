@@ -28,15 +28,17 @@ class PlayerStateModule : ICubeModule {
 
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
         eventBus.subscribe<PlayerAuthorized> { (player, playerId, apiPlayer, _) ->
-            cachedPlayersId[player.gameProfile.name] = playerId
-            cachedPlayersPremium[player.gameProfile.name] = apiPlayer.isPremium
+            val playername = player.gameProfile.name
+            afkPlayers.remove(playername)
+            cachedPlayersId[playername] = playerId
+            cachedPlayersPremium[playername] = apiPlayer.isPremium
             modScope.launch {
                 apiClient.setPlayerStateOnline(playerId)
             }
         }
 
         eventBus.subscribe<PlayerUnauthorized> { (player, playerId) ->
-            cachedPlayersId[player.gameProfile.name] = playerId
+            afkPlayers.remove(player.gameProfile.name)
             modScope.launch {
                 apiClient.setPlayerStateOffline(playerId)
             }
