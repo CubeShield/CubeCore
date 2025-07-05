@@ -1,6 +1,7 @@
 package ru.cubeshield.cubecore.modules
 
 import kotlinx.coroutines.*
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
@@ -30,12 +31,13 @@ import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.config.accentColor
 import ru.cubeshield.cubecore.config.baseColor
 import ru.cubeshield.cubecore.event.*
+import ru.cubeshield.cubecore.util.ModuleDataStore
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
 
-@Serializable
+
 data class AltarItem(
     val id: Identifier,
     var current: Int = 0,
@@ -44,13 +46,17 @@ data class AltarItem(
 )
 
 
+@Serializable
+data class AltarItemData(
+    val id: String,
+    var current: Int = 0,
+    val required: Int = 16,
+    var discovered: Boolean = false
+)
 
-class NetherOpeningModule : ICubeModule {
-    override val id = "nether_opening_module"
-    override val name = "Nether Opening Module"
-    override val description = "Модуль, отвечающий за открытие ада"
-
-    private val requiredItems = setOf(
+@Serializable
+data class AltarItemsData(
+    val altarItems: List<AltarItemData> = listOf(
         "minecraft:ender_pearl",
         "minecraft:rotten_flesh",
         "minecraft:golden_carrot",
@@ -62,11 +68,23 @@ class NetherOpeningModule : ICubeModule {
         "minecraft:redstone",
         "minecraft:glowstone_dust",
         "minecraft:bone",
-        "minecraft:quartz"
-    ).associate { idStr ->
-        val id = Identifier.of(idStr)
-        id to AltarItem(id)
-    }.toMutableMap()
+        "minecraft:quartz",
+        "minecraft:slime_ball",
+        "minecraft:armadillo_scute",
+        "minecraft:amethyst_shard",
+        "minecraft:sugar",
+        "minecraft:ominous_bottle",
+        "minecraft:prismarine_shard",
+    ).map { id -> AltarItemData(id)}
+)
+
+class NetherOpeningModule : ICubeModule {
+    override val id = "nether_opening_module"
+    override val name = "Nether Opening Module"
+    override val description = "Модуль, отвечающий за открытие ада"
+
+    private lateinit var dataStore: ModuleDataStore<AltarItemsData>
+    private val requiredItems = mutableMapOf<Identifier, AltarItem>()
 
     private lateinit var hologramPos: BlockPos
     private lateinit var cauldronPos: BlockPos
@@ -74,6 +92,14 @@ class NetherOpeningModule : ICubeModule {
 
 
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
+        dataStore = ModuleDataStore(this, AltarItemsData.serializer()) { AltarItemsData() }
+        val data = dataStore.load()
+        data.altarItems.forEach {altarItemData ->
+            val altarId = Identifier.of(altarItemData.id)
+            requiredItems[altarId] = AltarItem(altarId, altarItemData.current, altarItemData.required, altarItemData.discovered)
+        }
+
+
         cauldronPos = BlockPos(config.modules.netherOpeningModule.cauldronX, config.modules.netherOpeningModule.cauldronY, config.modules.netherOpeningModule.cauldronZ)
         hologramPos = cauldronPos
 
@@ -252,5 +278,13 @@ class NetherOpeningModule : ICubeModule {
         return positions
     }
 
-    override fun shutdown() {}
+    override fun shutdown() {
+        val altarItemsData = mutableListOf<AltarItemData>()
+        requiredItems.forEach {altarItem ->
+            altarItemsData.add(
+                AltarItemData(altarItem.value.id.toString(), altarItem.value.current, altarItem.value.required, altarItem.value.discovered)
+            )
+        }
+        dataStore.save(AltarItemsData(altarItems = altarItemsData))
+    }
 }
