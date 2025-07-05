@@ -76,6 +76,7 @@ class BankModule : ICubeModule {
                                 MessageUtil.send(sender, message, false)
                             }
                             is ApiResponse.Error -> {
+                                logger.error("aob", result.exception)
                                 MessageUtil.send(sender, "Не удалось получить ваш баланс", true)
                             }
                         }

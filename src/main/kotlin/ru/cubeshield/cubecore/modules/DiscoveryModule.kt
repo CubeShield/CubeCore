@@ -20,8 +20,6 @@ import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Style
 import net.minecraft.text.Text
-import net.minecraft.text.TextColor
-import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.Rarity
 import ru.cubeshield.cubecore.api.ApiClient
@@ -30,8 +28,6 @@ import ru.cubeshield.cubecore.config.accentColor
 import ru.cubeshield.cubecore.config.baseColor
 import ru.cubeshield.cubecore.event.*
 import ru.cubeshield.cubecore.util.ModuleDataStore
-import java.awt.event.ItemEvent
-import kotlin.random.Random
 
 
 @kotlinx.serialization.Serializable

@@ -87,6 +87,7 @@ class CubeCore : ModInitializer {
         moduleManager.registerModule(SignPaymentModule::class)
         moduleManager.registerModule(PremiumPermissionModule::class)
         moduleManager.registerModule(KnowledgeModule::class)
+        moduleManager.registerModule(NetherOpeningModule::class)
 
         LOGGER.info("Initializing all modules")
         moduleManager.initializeAll()
