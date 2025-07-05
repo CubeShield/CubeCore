@@ -209,12 +209,12 @@ class NetherOpeningModule : ICubeModule {
             }
             isNetherOpenned = true
             world.breakBlock(cauldronPos, false)
-        }
-        val commandSound = "noportals disableNetherPortal false"
-        world.server.execute {
-            try {
-                world.server.commandManager.dispatcher.execute(commandSound, world.server.commandSource)
-            } catch (_: Exception) {
+            val commandSound = "noportals disableNetherPortal false"
+            world.server.execute {
+                try {
+                    world.server.commandManager.dispatcher.execute(commandSound, world.server.commandSource)
+                } catch (_: Exception) {
+                }
             }
         }
         return isOpen
