@@ -17,6 +17,7 @@ import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.util.Rarity
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.config.accentColor
@@ -67,12 +68,17 @@ class ItemFlexModule : ICubeModule {
                         if (!stack.isOf(mainHandStack.item)) continue
                         flexItemAmount += stack.count
                     }
-                    val amountMessage = if (flexItemAmount > 1) {"x$flexItemAmount "} else {""}
+                    val amountMessage = if (flexItemAmount > 1 && mainHandStack.item != Items.ENCHANTED_BOOK) {"x$flexItemAmount "} else {""}
+
+                    var itemStyle = mainHandStack.toHoverableText().copy().style
+                    if (mainHandStack.rarity == Rarity.COMMON) {
+                        itemStyle = itemStyle.withColor(accentColor.rgb)
+                    }
 
                     val message = playerNameText
                         .append(Text.literal(" флексит своим предметом ").setStyle(Style.EMPTY.withColor(baseColor)))
-                        .append(Text.literal(amountMessage).setStyle(mainHandStack.toHoverableText().style))
-                        .append(mainHandStack.toHoverableText())
+                        .append(Text.literal(amountMessage).setStyle(itemStyle))
+                        .append(mainHandStack.toHoverableText().copy().setStyle(itemStyle))
 
                     server.playerManager.broadcast(message, false)
                     server.playerManager.playerList.forEach {player ->
