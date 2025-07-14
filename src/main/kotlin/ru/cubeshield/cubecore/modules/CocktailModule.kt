@@ -2,6 +2,7 @@ package ru.cubeshield.cubecore.modules
 
 
 import kotlinx.coroutines.*
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.item.Item
@@ -14,6 +15,7 @@ import ru.cubeshield.cubecore.event.*
 import ru.cubeshield.cubecore.potion.CustomPotion
 import ru.cubeshield.cubecore.potion.CustomPotionFactory
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.min
 import kotlin.random.Random
 
 data class PlayerDrunkenness (
@@ -28,12 +30,45 @@ class CocktailModule : ICubeModule {
 
     private val drunkennessLevels = ConcurrentHashMap<String, PlayerDrunkenness>()
 
+    private val CHANCE_PER_AMPLIFIER_PER_TICK = 0.015
+    private val BASE_INTENSITY = 0.08
+    private val MAX_INTENSITY = 0.4
+
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
         eventBus.subscribe<PlayerAuthorized> { (player) ->
             CustomPotion.entries.map { potion ->
                 player.giveItemStack(CustomPotionFactory.createPotion(potion))
             }
         }
+
+
+        ServerTickEvents.END_WORLD_TICK.register(ServerTickEvents.EndWorldTick { world ->
+            if (world.isClient) return@EndWorldTick
+
+            world.server.playerManager.playerList.forEach { player ->
+                val playername = player.gameProfile.name
+                val drunkenness = drunkennessLevels[playername] ?: return@forEach
+
+                if (System.currentTimeMillis() > drunkenness.until) {
+                    drunkennessLevels.remove(playername)
+                    return@forEach
+                }
+
+                val amplifier = drunkenness.amplifier
+                val chance = CHANCE_PER_AMPLIFIER_PER_TICK * amplifier
+
+                if (Random.nextDouble() < chance) {
+                    val intensity = min(MAX_INTENSITY, BASE_INTENSITY * amplifier)
+                    player.addVelocity(
+                        Random.nextDouble(-intensity, intensity),
+                        0.0,
+                        Random.nextDouble(-intensity, intensity)
+                    )
+                    player.velocityModified = true
+                }
+            }
+        })
+
         UseItemCallback.EVENT.register(UseItemCallback { player, world, hand ->
             val stack = player.getStackInHand(hand)
             val nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA)
