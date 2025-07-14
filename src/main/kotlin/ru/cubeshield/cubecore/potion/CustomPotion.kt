@@ -1,18 +1,22 @@
 package ru.cubeshield.cubecore.potion
 
+import net.minecraft.entity.damage.DamageSource
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import ru.cubeshield.cubecore.config.accentColor
+import kotlin.random.Random
 
 enum class CustomPotion(
     val displayName: Text,
     val color: Int,
     val effects: List<StatusEffectInstance>,
-    val drunkennessLevel: Int = 0,
+    val drunkennessAmplifier: Int = 0,
     val description: Text? = null,
+    val onApply: ((player: ServerPlayerEntity, potion: CustomPotion) -> Unit) = { _, _ -> }
 ) {
     COLA(
         Text.literal("Бутылочка напитка «Cola»").setStyle(Style.EMPTY.withColor(accentColor)),
@@ -27,7 +31,8 @@ enum class CustomPotion(
         listOf(
             StatusEffectInstance(StatusEffects.HASTE, 40 * 20, 0),
             StatusEffectInstance(StatusEffects.BLINDNESS, 25 * 20)
-        )
+        ),
+        1,
     ),
     SPID(
         Text.literal("Коктейль «СПИД»").setStyle(Style.EMPTY.withColor(accentColor)),
@@ -37,7 +42,8 @@ enum class CustomPotion(
             StatusEffectInstance(StatusEffects.BLINDNESS, 15 * 20),
             StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 20),
             StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20 * 20)
-        )
+        ),
+        2
     ),
     KB_SKULL(
         Text.literal("«Черепок из КБ ☠»").setStyle(Style.EMPTY.withColor(accentColor)),
@@ -46,8 +52,14 @@ enum class CustomPotion(
             StatusEffectInstance(StatusEffects.BLINDNESS, 50 * 20),
             StatusEffectInstance(StatusEffects.SLOWNESS, 30 * 20),
         ),
+        3,
         description = Text.literal(""""Ни одна мразь не доживёт до завтра... Я отправлю в могилу стольких, скольких смогу"""").setStyle(Style.EMPTY.withColor(
-            Formatting.DARK_PURPLE).withItalic(true))
+            Formatting.DARK_PURPLE).withItalic(true)),
+        onApply = {player, potion ->
+            if (Random.nextBoolean()) {
+                player.kill(player.world)
+            }
+        }
     ),
     TOODRY(
         Text.literal("Коктейль «Сушняк»").setStyle(Style.EMPTY.withColor(accentColor)),
@@ -57,6 +69,7 @@ enum class CustomPotion(
             StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 40 * 20),
             StatusEffectInstance(StatusEffects.WITHER, 15 * 20),
         ),
+        2,
     ),
     FULL_HOUSE(
         Text.literal("Коктейль «Фулл Хаус»").setStyle(Style.EMPTY.withColor(accentColor)),
@@ -68,6 +81,7 @@ enum class CustomPotion(
             StatusEffectInstance(StatusEffects.WITHER, 25 * 20),
             StatusEffectInstance(StatusEffects.REGENERATION, 15 * 20),
         ),
+        3,
     ),
     SAAT(
         Text.literal("Коктейль «СААТ»").setStyle(Style.EMPTY.withColor(accentColor)),
@@ -77,6 +91,7 @@ enum class CustomPotion(
             StatusEffectInstance(StatusEffects.NAUSEA, 50 * 20),
             StatusEffectInstance(StatusEffects.STRENGTH, 40 * 20),
         ),
+        1,
     ),
     GREEN_TEA(
         Text.literal("Бутылочка Зеленого чая").setStyle(Style.EMPTY.withColor(accentColor)),
