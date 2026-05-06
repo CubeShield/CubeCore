@@ -4,11 +4,16 @@ package ru.cubeshield.cubecore.modules
 import kotlinx.coroutines.*
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.UseItemCallback
+import net.fabricmc.fabric.api.registry.FabricBrewingRecipeRegistryBuilder
+import net.fabricmc.fabric.mixin.content.registry.BrewingRecipeRegistryBuilderMixin
+import net.minecraft.block.Blocks
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.item.Item
 import net.minecraft.item.Items
+import net.minecraft.recipe.BrewingRecipeRegistry
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.ActionResult
+import net.minecraft.util.math.BlockPos
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.event.*
@@ -33,6 +38,8 @@ class CocktailModule : ICubeModule {
     private val CHANCE_PER_AMPLIFIER_PER_TICK = 0.015
     private val BASE_INTENSITY = 0.08
     private val MAX_INTENSITY = 0.4
+
+    private val brewingStands = mutableListOf<BlockPos>()
 
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
         eventBus.subscribe<PlayerAuthorized> { (player) ->
@@ -67,6 +74,10 @@ class CocktailModule : ICubeModule {
                     player.velocityModified = true
                 }
             }
+        })
+
+        ServerTickEvents.END_WORLD_TICK.register(ServerTickEvents.EndWorldTick { world ->
+            if (world.isClient) return@EndWorldTick
         })
 
         UseItemCallback.EVENT.register(UseItemCallback { player, world, hand ->
