@@ -1,25 +1,19 @@
 package ru.cubeshield.cubecore.modules
 
 import com.mojang.brigadier.CommandDispatcher
-import com.mojang.brigadier.arguments.StringArgumentType
 import kotlinx.coroutines.*
-import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
-import net.minecraft.command.CommandSource
-import net.minecraft.command.argument.EntityArgumentType
-import net.minecraft.particle.ParticleTypes
-import net.minecraft.potion.Potions
-import net.minecraft.server.command.CommandManager
-import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
-import net.minecraft.text.Text
+import net.minecraft.commands.CommandSourceStack
+import net.minecraft.commands.Commands
+import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.permissions.Permissions
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.sounds.SoundSource
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.event.*
 import kotlin.random.Random
-
 
 class SpitModule : ICubeModule {
     override val id = "spit_module"
@@ -34,47 +28,44 @@ class SpitModule : ICubeModule {
         }
     }
 
-    private fun registerCommands(dispatcher: CommandDispatcher<ServerCommandSource>) {
+    private fun registerCommands(dispatcher: CommandDispatcher<CommandSourceStack>) {
         dispatcher.register(
-            CommandManager.literal("spit")
-                .requires { source -> Permissions.check(source, PREMIUM_PERMISSION, source.hasPermissionLevel(2)) }
+            Commands.literal("spit")
+                .requires { source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR) } // FIX IMPLEMENT LP
                 .executes { context ->
-                    val spitter = context.source.playerOrThrow
+                    val spitter = context.source.playerOrException
                     executeSpit(context.source, spitter)
                     1
                 }
-
         )
     }
 
+    private fun executeSpit(source: CommandSourceStack, spitter: ServerPlayer) {
+        val level = spitter.level()
+        val eyePos = spitter.getEyePosition()
 
-    private fun executeSpit(source: ServerCommandSource, spitter: ServerPlayerEntity) {
-        val world = spitter.world
-        val eyePos = spitter.eyePos
-        world.playSound(
+        level.playSound(
             null,
             eyePos.x, eyePos.y, eyePos.z,
-            SoundEvents.ENTITY_LLAMA_SPIT,
-            SoundCategory.PLAYERS,
+            SoundEvents.LLAMA_SPIT,
+            SoundSource.PLAYERS,
             1.0f,
             1.0f
         )
 
-        val lookVec = spitter.rotationVector
+        val lookVec = spitter.getLookAngle()
 
         for (i in 0..15) {
             val randomX = (Random.nextDouble() - 0.5) * 0.3
             val randomY = (Random.nextDouble() - 0.5) * 0.3
             val randomZ = (Random.nextDouble() - 0.5) * 0.3
 
-            world.spawnParticles(
+            level.addParticle(
                 ParticleTypes.SPIT,
                 eyePos.x, eyePos.y, eyePos.z,
-                0,
                 lookVec.x + randomX,
                 lookVec.y + randomY,
-                lookVec.z + randomZ,
-                0.7
+                lookVec.z + randomZ
             )
         }
     }

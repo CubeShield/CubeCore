@@ -1,22 +1,17 @@
 package ru.cubeshield.cubecore.modules
 
 import com.mojang.brigadier.CommandDispatcher
-import com.mojang.brigadier.arguments.StringArgumentType
 import kotlinx.coroutines.*
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
-import net.minecraft.command.CommandSource
-import net.minecraft.command.argument.EntityArgumentType
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.minecraft.potion.Potions
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Style
 import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import net.minecraft.util.Rarity
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.config.ModConfig
@@ -24,8 +19,6 @@ import ru.cubeshield.cubecore.config.accentColor
 import ru.cubeshield.cubecore.config.baseColor
 import ru.cubeshield.cubecore.event.*
 import ru.cubeshield.cubecore.utils.MessageUtil
-import kotlin.math.min
-import kotlin.random.Random
 
 
 class ItemFlexModule : ICubeModule {

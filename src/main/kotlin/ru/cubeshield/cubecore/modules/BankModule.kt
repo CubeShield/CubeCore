@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.minecraft.text.Text
 import net.minecraft.util.math.BlockPos
 import ru.cubeshield.cubecore.api.ApiResponse
 import ru.cubeshield.cubecore.utils.MessageUtil

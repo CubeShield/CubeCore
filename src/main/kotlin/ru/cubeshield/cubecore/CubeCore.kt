@@ -25,9 +25,6 @@ class CubeCore : ModInitializer {
     companion object {
         const val MOD_ID = "CubeCore"
         val LOGGER: org.slf4j.Logger = LoggerFactory.getLogger(MOD_ID)
-        val banner = this::class.java.getResourceAsStream("/banner.txt")
-            ?.bufferedReader()
-            ?.use { it.readText() }
         lateinit var minecraftServer: MinecraftServer
     }
 
@@ -40,7 +37,6 @@ class CubeCore : ModInitializer {
 
     override fun onInitialize() {
         LOGGER.info("Initializing CubeCore...")
-        LOGGER.info("\n$banner")
 
         config = ModConfig.loadConfig()
         LOGGER.info("Config loaded!")
@@ -83,11 +79,8 @@ class CubeCore : ModInitializer {
         moduleManager.registerModule(NotificationModule::class)
         moduleManager.registerModule(ItemFlexModule::class)
         moduleManager.registerModule(BankModule::class)
-        moduleManager.registerModule(CocktailModule::class)
         moduleManager.registerModule(SignPaymentModule::class)
         moduleManager.registerModule(PremiumPermissionModule::class)
-        moduleManager.registerModule(KnowledgeModule::class)
-        //moduleManager.registerModule(NetherOpeningModule::class)
         moduleManager.registerModule(SignModule::class)
 
         LOGGER.info("Initializing all modules")

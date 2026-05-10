@@ -1,16 +1,9 @@
 package ru.cubeshield.cubecore.modules
 
-import com.mojang.authlib.properties.Property
 import kotlinx.coroutines.*
-import net.minecraft.command.CommandExecutionContext
-import net.minecraft.server.MinecraftServer
-import net.minecraft.server.PlayerManager
-import net.minecraft.server.network.ServerPlayerEntity
-import ru.cubeshield.cubecore.CubeCore
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.event.*
-import kotlin.random.Random
 
 
 class PremiumPermissionModule : ICubeModule {
@@ -26,12 +19,12 @@ class PremiumPermissionModule : ICubeModule {
             val commandAddString = "lp user ${playername} parent add premium"
             val commandRemoveString = "lp user ${playername} parent remove premium"
 
-            val server = player.server ?: return@subscribe
+            val server = player.level().server ?: return@subscribe
             server.execute {
                 try {
-                    val source = server.commandSource
+                    val source = server.createCommandSourceStack()
                     val command = if (apiPlayer.isPremium) {commandAddString} else {commandRemoveString}
-                    server.commandManager.dispatcher.execute(command, source)
+                    server.commands.dispatcher.execute(command, source)
                     logger.info("Premium permissions for player $playername (${apiPlayer.id}) has handled")
                 } catch (_: Exception) {
                 }

@@ -1,14 +1,9 @@
 package ru.cubeshield.cubecore.modules
 
-
 import kotlinx.coroutines.*
-import kotlinx.datetime.Clock
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
-import net.minecraft.block.entity.SignBlockEntity
-import net.minecraft.text.Style
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Formatting
+import net.fabricmc.fabric.api.event.player.BlockEvents
+import net.minecraft.world.level.block.entity.SignBlockEntity
+import net.minecraft.world.InteractionResult
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.api.ApiResponse
 import ru.cubeshield.cubecore.api.dto.BillCreateDto
@@ -17,8 +12,6 @@ import ru.cubeshield.cubecore.event.*
 import ru.cubeshield.cubecore.utils.MessageUtil
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
-
 
 class SignPaymentModule : ICubeModule {
     override val id = "sign_payment_module"
@@ -37,9 +30,9 @@ class SignPaymentModule : ICubeModule {
             cachedPlayersIds[player.gameProfile.name] = playerId
         }
 
-        UseBlockCallback.EVENT.register { player, world, hand, hitResult ->
-            if (world.isClient) {
-                return@register ActionResult.PASS
+        BlockEvents.USE_WITHOUT_ITEM.register { state, world, blockPos, player, hitResult ->
+            if (world.isClientSide) {
+                return@register InteractionResult.PASS
             }
 
             val currentTime = System.currentTimeMillis()
@@ -47,20 +40,21 @@ class SignPaymentModule : ICubeModule {
 
             if (lastClickTime != null && (currentTime - lastClickTime) < COOLDOWN_DURATION_MS) {
                 MessageUtil.send(player, "Пожалуйста подождите...", false, false)
-                return@register ActionResult.SUCCESS
+                return@register InteractionResult.SUCCESS
             }
 
-            val toPlayerId = cachedPlayersIds[player.gameProfile.name] ?: return@register ActionResult.PASS
+            val toPlayerId = cachedPlayersIds[player.gameProfile.name] ?: return@register InteractionResult.PASS
             val blockEntity = world.getBlockEntity(hitResult.blockPos)
 
             if (blockEntity is SignBlockEntity) {
-                val signText = blockEntity.getText(true).getMessages(true).joinToString(separator = " ") { it.string }
+                val signText = blockEntity.getFrontText().getMessages(false)
+                    .joinToString(separator = " ") { it.string }
                 val matches = paymentPattern.findAll(signText)
                 if (matches.any()) {
                     matches.forEach { matchResult ->
                         val (playername, amountString) = matchResult.destructured
-                        if (player.gameProfile.name == playername) return@register ActionResult.PASS
-                        val amount = amountString.toIntOrNull() ?: return@register ActionResult.PASS
+                        if (player.gameProfile.name == playername) return@register InteractionResult.PASS
+                        val amount = amountString.toIntOrNull() ?: return@register InteractionResult.PASS
                         playerCooldowns[player.gameProfile.name] = currentTime
                         modScope.launch {
                             var fromPlayerId: String? = null
@@ -72,13 +66,13 @@ class SignPaymentModule : ICubeModule {
                                     MessageUtil.send(player, "Игрока с таким ником не существует", true, false)
                                 }
                             }
-                            if (fromPlayerId == null ) return@launch
+                            if (fromPlayerId == null) return@launch
                             MessageUtil.send(player, "Обработка платежа...", false, false)
                             when (val result = apiClient.createAutoPayBill(fromPlayerId, BillCreateDto(
                                 toPlayerId = toPlayerId,
                                 amount = amount,
                                 note = "Система Берестовых Платежей",
-                                until = Clock.System.now() + 10.minutes
+                                until = kotlin.time.Clock.System.now() + 10.minutes
                             ))) {
                                 is ApiResponse.Success -> {}
                                 is ApiResponse.Error -> {
@@ -86,15 +80,14 @@ class SignPaymentModule : ICubeModule {
                                 }
                             }
                         }
-                        return@register ActionResult.SUCCESS
+                        return@register InteractionResult.SUCCESS
                     }
-                    return@register ActionResult.SUCCESS
+                    return@register InteractionResult.SUCCESS
                 }
             }
-            ActionResult.PASS
+            InteractionResult.PASS
         }
     }
-
 
     override fun shutdown() {}
 }

@@ -4,9 +4,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val ktor_version: String by project
 
 plugins {
-    kotlin("jvm") version "2.1.21"
-    kotlin("plugin.serialization") version "2.1.20"
-    id("fabric-loom") version "1.10.1"
+    kotlin("jvm") version "2.3.21"
+    kotlin("plugin.serialization") version "2.3.21"
+    id("net.fabricmc.fabric-loom") version "1.16-SNAPSHOT"
     id("maven-publish")
 }
 
@@ -23,7 +23,6 @@ java {
     withSourcesJar()
 }
 
-
 fabricApi {
     configureDataGeneration {
         client = true
@@ -32,6 +31,7 @@ fabricApi {
 
 repositories {
     mavenCentral()
+    maven("https://maven.fabricmc.net/") { name = "Fabric" }
     maven("https://api.modrinth.com/maven")
     maven("https://maven.nucleoid.xyz/") { name = "Nucleoid" }
 }
@@ -42,11 +42,11 @@ val shade: Configuration by configurations.creating {
 }
 
 dependencies {
-    modImplementation("maven.modrinth:message-api:0.3.2+1.21.5")
-    modImplementation("eu.pb4:placeholder-api:2.7.0+1.21.6")
-    modImplementation("me.lucko:fabric-permissions-api:0.3.1")
+    implementation("maven.modrinth:message-api:0.3.5+26.1")
+    implementation("eu.pb4:placeholder-api:3.0.0+26.1")
+    implementation("me.lucko:fabric-permissions-api:0.6.1")
 
-    shade("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+    shade("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
     shade("io.ktor:ktor-client-core:$ktor_version")
     shade("io.ktor:ktor-client-cio:$ktor_version")
     shade("io.ktor:ktor-client-content-negotiation:$ktor_version")
@@ -56,10 +56,10 @@ dependencies {
     shade("io.ktor:ktor-client-json:$ktor_version")
 
     minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
-    mappings("net.fabricmc:yarn:${project.property("yarn_mappings")}:v2")
-    modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
-    modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
+
+    implementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
+    implementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_api_version")}")
 }
 
 configurations.implementation.get().extendsFrom(shade)
@@ -73,9 +73,9 @@ tasks.processResources {
     filesMatching("fabric.mod.json") {
         expand(
             "version" to project.version,
-            "minecraft_version" to project.property("minecraft_version"),
-            "loader_version" to project.property("loader_version"),
-            "kotlin_loader_version" to project.property("kotlin_loader_version")
+            "minecraft_version" to project.property("minecraft_version")!!,
+            "loader_version" to project.property("loader_version")!!,
+            "kotlin_loader_version" to project.property("kotlin_loader_version")!!
         )
     }
 }
@@ -106,7 +106,5 @@ publishing {
             from(components["java"])
         }
     }
-    repositories {
-
-    }
+    repositories {}
 }
