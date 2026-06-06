@@ -1,11 +1,9 @@
 package ru.cubeshield.cubecore.config
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import net.fabricmc.loader.api.FabricLoader
 import ru.cubeshield.cubecore.CubeCore
-import ru.cubeshield.cubecore.modules.NetherOpeningModule
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.readText
@@ -27,22 +25,12 @@ data class ModConfig (
     data class ModuleConfigs (
         val authModule: AuthModuleConfig = AuthModuleConfig(),
         val playerAfkModule: PlayerAfkModuleConfig = PlayerAfkModuleConfig(),
-        val bankModule: BankModuleConfig = BankModuleConfig(),
-        val netherOpeningModule: NetherOpeningModuleConfig = NetherOpeningModuleConfig()
+        val bankModule: BankModuleConfig = BankModuleConfig()
     )
 
     @Serializable
     data class AuthModuleConfig(
         val enable: Boolean = true
-    )
-
-    @Serializable
-    data class NetherOpeningModuleConfig(
-        val enable: Boolean = true,
-        val cauldronX: Int = 0,
-        val cauldronY: Int = 100,
-        val cauldronZ: Int = 0,
-        val damageAudioPlayerSoundId: String = "f3c7699d-ddd6-41fc-87a8-d0155e9dc830"
     )
 
     @Serializable
