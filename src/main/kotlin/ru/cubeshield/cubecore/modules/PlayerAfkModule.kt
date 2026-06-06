@@ -35,9 +35,9 @@ class PlayerAfkModule : ICubeModule {
             job = modScope.launch {
                 while (isActive) {
                     val now = System.currentTimeMillis()
-                    for (player in server.playerManager.playerList) {
+                    for (player in server.playerList.players) {
                         val playername = player.gameProfile.name
-                        val currentRot = player.headYaw to player.pitch
+                        val currentRot = player.getYHeadRot() to player.getXRot()
                         val lastRot = lastRotations.put(playername, currentRot)
                         if (lastRot != null && lastRot != currentRot) {
                             val wasAfk = afkPlayers.remove(playername)
