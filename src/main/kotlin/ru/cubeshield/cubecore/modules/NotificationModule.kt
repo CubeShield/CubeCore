@@ -83,7 +83,7 @@ class NotificationModule : ICubeModule {
         try {
             val notification = Json.decodeFromString<WSNotification>(text)
             server.execute {
-                val player = server.playerManager.getPlayer(notification.toPlayer)
+                val player = server.playerList.getPlayerByName(notification.toPlayer)
                 if (player != null) {
                     MessageUtil.send(player, notification.message)
                 }
