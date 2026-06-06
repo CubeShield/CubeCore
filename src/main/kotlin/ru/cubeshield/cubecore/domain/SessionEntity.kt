@@ -1,10 +1,9 @@
 package ru.cubeshield.cubecore.domain
 
-import kotlinx.datetime.Instant
 
 data class SessionEntity(
     val playerId: String,
     val ipAddress: String,
-    val loginTime: Instant,
+    val loginTime: kotlin.time.Instant,
     var afkSeconds: Int = 0
 )
