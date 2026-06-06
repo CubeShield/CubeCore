@@ -70,7 +70,7 @@ class FunCommandsModule : ICubeModule {
     private fun registerCommands(dispatcher: CommandDispatcher<CommandSourceStack>, modScope: CoroutineScope) {
         dispatcher.register(
             Commands.literal("factcheckstatus")
-                .requires { source -> source.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_MODERATOR) } // FIX IMPLEMENT LP
+                .requires(Permissions.require("cubecore.premium"))
                 .executes { context ->
                     val source = context.source
                     source.sendSystemMessage(Component.literal("Fact Check Status:"))
@@ -86,7 +86,7 @@ class FunCommandsModule : ICubeModule {
 
         dispatcher.register(
             Commands.literal("sosal?")
-                .requires { source -> source.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_MODERATOR) } // FIX IMPLEMENT LP
+                .requires(Permissions.require("cubecore.premium"))
                 .then(Commands.argument("player", EntityArgument.player())
                     .executes { context ->
                         modScope.launch {
@@ -112,7 +112,7 @@ class FunCommandsModule : ICubeModule {
 
         dispatcher.register(
             Commands.literal("sex")
-                .requires { source -> source.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_MODERATOR) } // FIX IMPLEMENT LP
+                .requires(Permissions.require("cubecore.premium"))
                 .then(
                     Commands.argument("target", StringArgumentType.greedyString())
                         .suggests { context, builder ->

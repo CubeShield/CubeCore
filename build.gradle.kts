@@ -17,16 +17,10 @@ base {
     archivesName.set(project.property("archives_base_name") as String)
 }
 
-val targetJavaVersion = 21
+val targetJavaVersion = 25
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
     withSourcesJar()
-}
-
-fabricApi {
-    configureDataGeneration {
-        client = true
-    }
 }
 
 repositories {
@@ -42,9 +36,15 @@ val shade: Configuration by configurations.creating {
 }
 
 dependencies {
+    minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
+
+    implementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
+    implementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_api_version")}")
+
     implementation("maven.modrinth:message-api:0.3.5+26.1")
     implementation("eu.pb4:placeholder-api:3.0.0+26.1")
-    implementation("me.lucko:fabric-permissions-api:0.6.1")
+    implementation("me.lucko:fabric-permissions-api:0.7.0")
 
     shade("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
     shade("io.ktor:ktor-client-core:$ktor_version")
@@ -54,12 +54,6 @@ dependencies {
     shade("io.ktor:ktor-client-logging:$ktor_version")
     shade("io.ktor:ktor-client-resources:$ktor_version")
     shade("io.ktor:ktor-client-json:$ktor_version")
-
-    minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
-
-    implementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
-    implementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
-    implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_api_version")}")
 }
 
 configurations.implementation.get().extendsFrom(shade)
@@ -107,4 +101,10 @@ publishing {
         }
     }
     repositories {}
+}
+
+tasks.register("listConfigs") {
+    doLast {
+        configurations.forEach { println(it.name) }
+    }
 }

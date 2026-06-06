@@ -2,12 +2,13 @@ package ru.cubeshield.cubecore.modules
 
 import com.mojang.brigadier.CommandDispatcher
 import kotlinx.coroutines.*
+import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.server.permissions.Permissions
+
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import ru.cubeshield.cubecore.api.ApiClient
@@ -31,7 +32,7 @@ class SpitModule : ICubeModule {
     private fun registerCommands(dispatcher: CommandDispatcher<CommandSourceStack>) {
         dispatcher.register(
             Commands.literal("spit")
-                .requires { source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR) } // FIX IMPLEMENT LP
+                .requires(Permissions.require("cubecore.premium"))
                 .executes { context ->
                     val spitter = context.source.playerOrException
                     executeSpit(context.source, spitter)

@@ -7,7 +7,7 @@ import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
-import net.minecraft.server.permissions.Permissions
+import me.lucko.fabric.api.permissions.v0.Permissions
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.Rarity
@@ -33,7 +33,7 @@ class ItemFlexModule : ICubeModule {
     private fun registerCommands(dispatcher: CommandDispatcher<CommandSourceStack>, modScope: CoroutineScope) {
         dispatcher.register(
             Commands.literal("flex")
-                .requires { source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR) } // FIX IMPLEMENT LP
+                .requires(Permissions.require("cubecore.premium"))
                 .executes { context ->
                     val source = context.source
                     val sender = source.playerOrException
