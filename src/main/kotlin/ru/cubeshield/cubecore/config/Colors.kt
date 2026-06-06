@@ -1,6 +1,6 @@
 package ru.cubeshield.cubecore.config
 
-import net.minecraft.text.TextColor
+import net.minecraft.network.chat.TextColor
 
 val accentColor: TextColor = TextColor.fromRgb(0xD8F136)
 val secondaryAccentColor: TextColor = TextColor.fromRgb(0xD7306E)

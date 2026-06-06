@@ -75,7 +75,6 @@ class CubeCore : ModInitializer {
         moduleManager.registerModule(FunCommandsModule::class)
         moduleManager.registerModule(SkinModule::class)
         moduleManager.registerModule(SpitModule::class)
-        moduleManager.registerModule(DiscoveryModule::class)
         moduleManager.registerModule(NotificationModule::class)
         moduleManager.registerModule(ItemFlexModule::class)
         moduleManager.registerModule(BankModule::class)

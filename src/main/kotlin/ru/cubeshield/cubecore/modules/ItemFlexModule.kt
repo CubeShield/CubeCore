@@ -2,17 +2,15 @@ package ru.cubeshield.cubecore.modules
 
 import com.mojang.brigadier.CommandDispatcher
 import kotlinx.coroutines.*
-import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.server.command.CommandManager
-import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
-import net.minecraft.text.Style
-import net.minecraft.text.Text
-import net.minecraft.util.Rarity
+import net.minecraft.commands.CommandSourceStack
+import net.minecraft.commands.Commands
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.Style
+import net.minecraft.server.permissions.Permissions
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Rarity
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.config.accentColor
@@ -26,58 +24,54 @@ class ItemFlexModule : ICubeModule {
     override val name = "Item Flex Module"
     override val description = "Модуль, добавляющий возможность флексить предметами"
 
-    private val PREMIUM_PERMISSION = "cubecore.premium"
-
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
             registerCommands(dispatcher, modScope)
         }
     }
 
-    private fun registerCommands(dispatcher: CommandDispatcher<ServerCommandSource>, modScope: CoroutineScope) {
+    private fun registerCommands(dispatcher: CommandDispatcher<CommandSourceStack>, modScope: CoroutineScope) {
         dispatcher.register(
-            CommandManager.literal("flex")
-                .requires { source -> Permissions.check(source, PREMIUM_PERMISSION, source.hasPermissionLevel(2)) }
+            Commands.literal("flex")
+                .requires { source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR) } // FIX IMPLEMENT LP
                 .executes { context ->
                     val source = context.source
-                    val sender = source.playerOrThrow
+                    val sender = source.playerOrException
 
-                    val mainHandStack: ItemStack = sender.mainHandStack
+                    val mainHandStack = sender.getMainHandItem()
 
                     if (mainHandStack.isEmpty) {
-                        MessageUtil.send(source.player!!,"Ты должен держать предмет в руке, чтобы флексить!", true, false)
+                        MessageUtil.send(source.player!!, "Ты должен держать предмет в руке, чтобы флексить!", true, false)
                         return@executes 0
                     }
 
                     val server = source.server
 
-                    val playerNameText = Text.literal(sender.gameProfile.name).setStyle(Style.EMPTY.withColor(
-                        accentColor
-                    ))
+                    val playerNameText = Component.literal(sender.gameProfile.name)
+                        .setStyle(Style.EMPTY.withColor(accentColor))
 
                     var flexItemAmount = 0
-                    for (i in 0 until sender.inventory.size()) {
-                        val stack = sender.inventory.getStack(i)
-                        if (!stack.isOf(mainHandStack.item)) continue
+                    for (i in 0 until sender.inventory.getContainerSize()) {
+                        val stack = sender.inventory.getItem(i)
+                        if (!stack.`is`(mainHandStack.item)) continue
                         flexItemAmount += stack.count
                     }
-                    val amountMessage = if (flexItemAmount > 1 && mainHandStack.item != Items.ENCHANTED_BOOK) {"x$flexItemAmount "} else {""}
+                    val amountMessage = if (flexItemAmount > 1 && mainHandStack.item != Items.ENCHANTED_BOOK) "x$flexItemAmount " else ""
 
-                    var itemStyle = mainHandStack.toHoverableText().copy().style
+                    var itemStyle = mainHandStack.getDisplayName().copy().style
                     if (mainHandStack.rarity == Rarity.COMMON) {
-                        itemStyle = itemStyle.withColor(accentColor.rgb)
+                        itemStyle = itemStyle.withColor(accentColor)
                     }
 
                     val message = playerNameText
-                        .append(Text.literal(" флексит своим предметом ").setStyle(Style.EMPTY.withColor(baseColor)))
-                        .append(Text.literal(amountMessage).setStyle(itemStyle))
-                        .append(mainHandStack.toHoverableText().copy().setStyle(itemStyle))
+                        .append(Component.literal(" флексит своим предметом ").setStyle(Style.EMPTY.withColor(baseColor)))
+                        .append(Component.literal(amountMessage).setStyle(itemStyle))
+                        .append(mainHandStack.getDisplayName().copy().setStyle(itemStyle))
 
-                    server.playerManager.broadcast(message, false)
-                    server.playerManager.playerList.forEach {player ->
-                        player.playSoundToPlayer(SoundEvents.ENTITY_VILLAGER_CELEBRATE, SoundCategory.PLAYERS, 1.0f, 1.0f)
+                    server.playerList.broadcastSystemMessage(message, false)
+                    server.playerList.players.forEach { player ->
+                        player.playSound(SoundEvents.VILLAGER_CELEBRATE, 1.0f, 1.0f)
                     }
-
 
                     1
                 }
