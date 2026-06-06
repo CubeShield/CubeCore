@@ -3,13 +3,7 @@ package ru.cubeshield.cubecore.modules
 import eu.pb4.placeholders.api.PlaceholderResult
 import eu.pb4.placeholders.api.Placeholders
 import kotlinx.coroutines.*
-import net.minecraft.server.MinecraftServer
-import net.minecraft.server.PlayerManager
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Style
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
-import ru.cubeshield.cubecore.CubeCore
+import net.minecraft.resources.Identifier
 import ru.cubeshield.cubecore.api.ApiClient
 import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.config.accentColor
@@ -60,24 +54,23 @@ class PlayerStateModule : ICubeModule {
             }
         }
 
-        Placeholders.register(Identifier.of("cubecore", "prefix-color")) { ctx, args ->
+        Placeholders.registerCommon<String>(Identifier.fromNamespaceAndPath("cubecore", "prefix-color")) { ctx, args ->
             if (!ctx.hasPlayer()) {
-                return@register PlaceholderResult.invalid("No player!")
+                return@registerCommon PlaceholderResult.invalid("No player!")
             }
-            val playername = ctx.player!!.gameProfile.name
-            val prefixColor = if (afkPlayers.contains(playername)) {afkColor} else {accentColor}
-            return@register PlaceholderResult.value(prefixColor.toString())
+            val playername = ctx.player()!!.gameProfile.name
+            val prefixColor = if (afkPlayers.contains(playername)) afkColor else accentColor
+            PlaceholderResult.value(prefixColor.toString())
         }
 
-
-        Placeholders.register(Identifier.of("cubecore", "prefix")) { ctx, args ->
+        Placeholders.registerCommon<String>(Identifier.fromNamespaceAndPath("cubecore", "prefix")) { ctx, args ->
             if (!ctx.hasPlayer()) {
-                return@register PlaceholderResult.invalid("No player!")
+                return@registerCommon PlaceholderResult.invalid("No player!")
             }
-            val playername = ctx.player!!.gameProfile.name
-            val isPremium = cachedPlayersPremium[playername] ?: return@register PlaceholderResult.invalid("No player!")
-            val prefixIcon = if (isPremium) {"★ "} else {"♦ "}
-            return@register PlaceholderResult.value(prefixIcon)
+            val playername = ctx.player()!!.gameProfile.name
+            val isPremium = cachedPlayersPremium[playername] ?: return@registerCommon PlaceholderResult.invalid("No player!")
+            val prefixIcon = if (isPremium) "★ " else "♦ "
+            PlaceholderResult.value(prefixIcon)
         }
 
     }
