@@ -8,7 +8,10 @@ import net.minecraft.commands.Commands
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import me.lucko.fabric.api.permissions.v0.Permissions
+import net.minecraft.core.Holder
+import net.minecraft.network.protocol.game.ClientboundSoundPacket
 import net.minecraft.sounds.SoundEvents
+import net.minecraft.sounds.SoundSource
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.Rarity
 import ru.cubeshield.cubecore.api.ApiClient
@@ -70,7 +73,15 @@ class ItemFlexModule : ICubeModule {
 
                     server.playerList.broadcastSystemMessage(message, false)
                     server.playerList.players.forEach { player ->
-                        player.playSound(SoundEvents.VILLAGER_CELEBRATE, 1.0f, 1.0f)
+                        player.connection.send(
+                            ClientboundSoundPacket(
+                                Holder.direct(SoundEvents.VILLAGER_CELEBRATE),
+                                SoundSource.MASTER,
+                                player.x, player.y, player.z,
+                                1.0f, 1.0f,
+                                player.level().random.nextLong()
+                            )
+                        )
                     }
 
                     1

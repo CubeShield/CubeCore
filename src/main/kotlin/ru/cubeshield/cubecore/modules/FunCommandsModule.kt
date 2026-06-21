@@ -9,8 +9,10 @@ import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 import net.minecraft.commands.SharedSuggestionProvider
 import net.minecraft.commands.arguments.EntityArgument
+import net.minecraft.core.Holder
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
+import net.minecraft.network.protocol.game.ClientboundSoundPacket
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import ru.cubeshield.cubecore.api.ApiClient
@@ -126,10 +128,14 @@ class FunCommandsModule : ICubeModule {
                             context.source.server.playerList.broadcastSystemMessage(message, false)
 
                             context.source.server.playerList.players.forEach { targetPlayer ->
-                                targetPlayer.playSound(
-                                    SoundEvents.SHULKER_DEATH,
-                                    1.0f,
-                                    1.0f
+                                targetPlayer.connection.send(
+                                    ClientboundSoundPacket(
+                                        Holder.direct(SoundEvents.SHULKER_DEATH),
+                                        SoundSource.MASTER,
+                                        targetPlayer.x, targetPlayer.y, targetPlayer.z,
+                                        1.0f, 1.0f,
+                                        targetPlayer.level().random.nextLong()
+                                    )
                                 )
                             }
                             1

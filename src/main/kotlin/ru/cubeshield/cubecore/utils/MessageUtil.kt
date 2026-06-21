@@ -1,9 +1,12 @@
 package ru.cubeshield.cubecore.utils
 
+import net.minecraft.core.Holder
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
+import net.minecraft.network.protocol.game.ClientboundSoundPacket
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
+import net.minecraft.sounds.SoundSource
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
 import ru.cubeshield.cubecore.config.accentColor
@@ -25,12 +28,20 @@ object MessageUtil {
     fun send(player: Player, text: String, isError: Boolean = false, withSound: Boolean = true) {
         player.sendSystemMessage(createMessage(text, isError))
         if (!withSound) return
-        player.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
+        // no sound(
     }
 
     fun send(player: ServerPlayer, text: String, isError: Boolean = false, withSound: Boolean = true) {
         player.sendSystemMessage(createMessage(text, isError))
         if (!withSound) return
-        player.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
+        player.connection.send(
+            ClientboundSoundPacket(
+                Holder.direct(SoundEvents.EXPERIENCE_ORB_PICKUP),
+                SoundSource.MASTER,
+                player.x, player.y, player.z,
+                1.0f, 1.0f,
+                player.level().random.nextLong()
+            )
+        )
     }
 }
