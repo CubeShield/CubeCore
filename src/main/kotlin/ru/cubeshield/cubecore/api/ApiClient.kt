@@ -143,4 +143,32 @@ class ApiClient (
         }
     }
 
+    suspend fun getItems(): ApiResponse<ItemsReadDto> {
+        return safeApiCall("/players/items") {
+            method = HttpMethod.Get
+        }
+    }
+
+    suspend fun createItem(itemCreateDto: ItemCreateDto): ApiResponse<ItemReadDto> {
+        return safeApiCall("/players/items") {
+            method = HttpMethod.Post
+            contentType(ContentType.Application.Json)
+            setBody(itemCreateDto)
+        }
+    }
+
+    suspend fun getDiscoveries(): ApiResponse<DiscoveryReadDto> {
+        return safeApiCall("/players/discoveries") {
+            method = HttpMethod.Get
+        }
+    }
+
+    suspend fun createDiscovery(playerId: String, discoveryCreateDto: DiscoveryCreateDto): ApiResponse<DiscoveryReadDto> {
+        return safeApiCall("/players/$playerId/discoveries") {
+            method = HttpMethod.Post
+            contentType(ContentType.Application.Json)
+            setBody(discoveryCreateDto)
+        }
+    }
+
 }
