@@ -8,7 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.serialization.json.Json
-import net.fabricmc.api.ModInitializer
+import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import org.slf4j.LoggerFactory
@@ -21,7 +21,7 @@ import io.ktor.serialization.kotlinx.json.*
 import net.minecraft.server.MinecraftServer
 import ru.cubeshield.cubecore.modules.*
 
-class CubeCore : ModInitializer {
+class CubeCore : DedicatedServerModInitializer {
     companion object {
         const val MOD_ID = "CubeCore"
         val LOGGER: org.slf4j.Logger = LoggerFactory.getLogger(MOD_ID)
@@ -35,7 +35,7 @@ class CubeCore : ModInitializer {
 
     private val mainScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    override fun onInitialize() {
+    override fun onInitializeServer() {
         LOGGER.info("Initializing CubeCore...")
 
         config = ModConfig.loadConfig()

@@ -14,7 +14,7 @@ data class PlayerReadDto(
     @SerialName("is_slim") val isSlim: Boolean,
     @SerialName("is_premium") val isPremium: Boolean,
     @SerialName("auth_code") val authCode: String,
-    val role: Int,
+    val role: String,
     val state: String,
     @SerialName("is_admin") val isAdmin: Boolean,
     @SerialName("last_login_ip") val lastLoginIp: String,

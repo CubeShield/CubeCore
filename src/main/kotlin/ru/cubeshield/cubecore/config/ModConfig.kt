@@ -35,6 +35,11 @@ data class ModConfig (
 
     @Serializable
     data class BankModuleConfig(
+        val banks: List<BankCoords> = emptyList()
+    )
+
+    @Serializable
+    data class BankCoords(
         val fromX: Int = 0,
         val fromY: Int = 0,
         val fromZ: Int = 0,

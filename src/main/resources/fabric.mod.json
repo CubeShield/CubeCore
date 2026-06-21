@@ -8,13 +8,16 @@
   "contact": {},
   "license": "All-Rights-Reserved",
   "icon": "assets/cubecore/icon.png",
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "fabric-datagen": [
       "ru.cubeshield.cubecore.client.CubeCoreDataGenerator"
     ],
-    "main": [
+    "server": [
       "ru.cubeshield.cubecore.CubeCore"
+    ],
+    "client": [
+      "ru.cubeshield.cubecore.client.CubeCoreClient"
     ]
   },
   "mixins": [
@@ -25,6 +28,7 @@
     "fabric-language-kotlin": ">=${kotlin_loader_version}",
     "fabric-api": "*",
     "minecraft": "${minecraft_version}",
-    "fabric-permissions-api-v0": "*"
+    "fabric-permissions-api-v0": "*",
+    "mcef-modern": "*"
   }
 }

@@ -39,22 +39,26 @@ class BankModule : ICubeModule {
     }
 
     private fun isPlayerInBankArea(player: ServerPlayer, config: ModConfig): Boolean {
-        val corner1 = BlockPos(
-            config.modules.bankModule.fromX,
-            config.modules.bankModule.fromY,
-            config.modules.bankModule.fromZ,
-        )
-        val corner2 = BlockPos(
-            config.modules.bankModule.toX,
-            config.modules.bankModule.toY,
-            config.modules.bankModule.toZ,
-        )
+        for (bank in config.modules.bankModule.banks) {
+            val corner1 = BlockPos(
+                bank.fromX,
+                bank.fromY,
+                bank.fromZ,
+            )
+            val corner2 = BlockPos(
+                bank.toX,
+                bank.toY,
+                bank.toZ,
+            )
+            val playerPos = player.blockPosition()
 
-        val playerPos = player.blockPosition()
-
-        return playerPos.x >= min(corner1.x, corner2.x) && playerPos.x <= max(corner1.x, corner2.x) &&
-                playerPos.y >= min(corner1.y, corner2.y) && playerPos.y <= max(corner1.y, corner2.y) &&
-                playerPos.z >= min(corner1.z, corner2.z) && playerPos.z <= max(corner1.z, corner2.z)
+            if (playerPos.x >= min(corner1.x, corner2.x) && playerPos.x <= max(corner1.x, corner2.x) &&
+                    playerPos.y >= min(corner1.y, corner2.y) && playerPos.y <= max(corner1.y, corner2.y) &&
+                    playerPos.z >= min(corner1.z, corner2.z) && playerPos.z <= max(corner1.z, corner2.z)) {
+                        return true
+            }
+        }
+        return false
     }
 
     private fun registerCommands(dispatcher: CommandDispatcher<CommandSourceStack>, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {

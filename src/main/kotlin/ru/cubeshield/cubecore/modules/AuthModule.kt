@@ -28,8 +28,10 @@ class AuthModule : ICubeModule {
                 when (val result = apiClient.getPlayer(playername)) {
                     is ApiResponse.Success -> {
                         apiPlayer = result.data
+                        logger.info("Found player $playername (${apiPlayer.id})")
                     }
                     is ApiResponse.Error -> {
+                        logger.info("Player $playername not found, creating new one...")
                         when (val newResult = apiClient.createPlayer(playername)) {
                             is ApiResponse.Success -> {
                                 apiPlayer = newResult.data
