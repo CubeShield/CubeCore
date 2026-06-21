@@ -157,7 +157,7 @@ class ApiClient (
         }
     }
 
-    suspend fun getDiscoveries(): ApiResponse<DiscoveryReadDto> {
+    suspend fun getDiscoveries(): ApiResponse<DiscoveriesReadDto> {
         return safeApiCall("/players/discoveries") {
             method = HttpMethod.Get
         }

@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ItemCreateDto(
-    val name: String,
+    @SerialName("translation_key") val translationKey: String,
     @SerialName("mod_name") val modName: String,
     val namespace: String,
     val item: String,

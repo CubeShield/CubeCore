@@ -8,6 +8,7 @@ import ru.cubeshield.cubecore.api.ApiResponse
 import ru.cubeshield.cubecore.api.dto.PlayerReadDto
 import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.event.*
+import ru.cubeshield.cubecore.player.PlayerCache
 import ru.cubeshield.cubecore.utils.MessageUtil
 import java.util.concurrent.ConcurrentHashMap
 
@@ -16,7 +17,6 @@ class AuthModule : ICubeModule {
     override val name = "Auth Module"
     override val description = "Модуль отвечающий за авторизацию игроков на сервере, а также обработку игровых сессий"
 
-    private var cachedPlayersId = ConcurrentHashMap<String, String>()
 
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
         eventBus.subscribe<PlayerJoinedEvent> { (player) ->
@@ -72,7 +72,7 @@ class AuthModule : ICubeModule {
                     apiClient.successPlayerNewIp(apiPlayer.id)
                     MessageUtil.send(player, "Вы успешно вошли с нового IP-Адреса", false, false)
                 }
-                cachedPlayersId[playername] = apiPlayer.id
+                PlayerCache.put(playername, apiPlayer.id)
                 eventBus.publish(PlayerAuthorized(player, apiPlayer.id, apiPlayer, loginTime))
                 logger.info("Player $playername (${apiPlayer.id}) has been authorized")
             }
@@ -80,7 +80,7 @@ class AuthModule : ICubeModule {
 
         eventBus.subscribe<PlayerLeftEvent> { (player) ->
             val playername = player.gameProfile.name
-            val playerId = cachedPlayersId[playername] ?: return@subscribe
+            val playerId = PlayerCache.getId(playername) ?: return@subscribe
             eventBus.publish(PlayerUnauthorized(player, playerId))
             logger.info("Player $playername ($playerId) has been unauthorized")
         }

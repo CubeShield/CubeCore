@@ -9,6 +9,7 @@ import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.config.accentColor
 import ru.cubeshield.cubecore.config.afkColor
 import ru.cubeshield.cubecore.event.*
+import ru.cubeshield.cubecore.player.PlayerCache
 import java.util.concurrent.ConcurrentHashMap
 
 class PlayerStateModule : ICubeModule {
@@ -16,7 +17,6 @@ class PlayerStateModule : ICubeModule {
     override val name = "Player State Module"
     override val description = "Модуль, отвечающий за отслеживания состояния игрока (Offline/Online/Afk)"
 
-    private var cachedPlayersId = ConcurrentHashMap<String, String>()
     private var cachedPlayersPremium = ConcurrentHashMap<String, Boolean>()
     private var afkPlayers = ConcurrentHashMap.newKeySet<String>()
 
@@ -24,7 +24,6 @@ class PlayerStateModule : ICubeModule {
         eventBus.subscribe<PlayerAuthorized> { (player, playerId, apiPlayer, _) ->
             val playername = player.gameProfile.name
             afkPlayers.remove(playername)
-            cachedPlayersId[playername] = playerId
             cachedPlayersPremium[playername] = apiPlayer.isPremium
             modScope.launch {
                 apiClient.setPlayerStateOnline(playerId)
@@ -39,7 +38,7 @@ class PlayerStateModule : ICubeModule {
         }
 
         eventBus.subscribe<PlayerWentAfkEvent> { (player) ->
-            val playerId = cachedPlayersId[player.gameProfile.name] ?: return@subscribe
+            val playerId = PlayerCache.getId(player.gameProfile.name) ?: return@subscribe
             afkPlayers.add(player.gameProfile.name)
             modScope.launch {
                 apiClient.setPlayerStateAfk(playerId)
@@ -47,7 +46,7 @@ class PlayerStateModule : ICubeModule {
         }
 
         eventBus.subscribe<PlayerReturnedFromAfkEvent> { (player) ->
-            val playerId = cachedPlayersId[player.gameProfile.name] ?: return@subscribe
+            val playerId = PlayerCache.getId(player.gameProfile.name) ?: return@subscribe
             afkPlayers.remove(player.gameProfile.name)
             modScope.launch {
                 apiClient.setPlayerStateOnline(playerId)

@@ -9,6 +9,7 @@ import ru.cubeshield.cubecore.api.ApiResponse
 import ru.cubeshield.cubecore.api.dto.BillCreateDto
 import ru.cubeshield.cubecore.config.ModConfig
 import ru.cubeshield.cubecore.event.*
+import ru.cubeshield.cubecore.player.PlayerCache
 import ru.cubeshield.cubecore.utils.MessageUtil
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration.Companion.minutes
@@ -20,16 +21,10 @@ class SignPaymentModule : ICubeModule {
 
     private val paymentPattern = Regex("@(\\w+)>(\\d+)АР")
 
-    private var cachedPlayersIds = ConcurrentHashMap<String, String>()
-
     private val playerCooldowns = ConcurrentHashMap<String, Long>()
     private val COOLDOWN_DURATION_MS = 1500L
 
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
-        eventBus.subscribe<PlayerAuthorized> { (player, playerId, _, _) ->
-            cachedPlayersIds[player.gameProfile.name] = playerId
-        }
-
         BlockEvents.USE_WITHOUT_ITEM.register { state, world, blockPos, player, hitResult ->
             if (world.isClientSide) {
                 return@register InteractionResult.PASS
@@ -43,7 +38,7 @@ class SignPaymentModule : ICubeModule {
                 return@register InteractionResult.SUCCESS
             }
 
-            val toPlayerId = cachedPlayersIds[player.gameProfile.name] ?: return@register InteractionResult.PASS
+            val toPlayerId = PlayerCache.getId(player.gameProfile.name) ?: return@register InteractionResult.PASS
             val blockEntity = world.getBlockEntity(hitResult.blockPos)
 
             if (blockEntity is SignBlockEntity) {

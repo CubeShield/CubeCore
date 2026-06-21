@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import ru.cubeshield.cubecore.api.ApiResponse
+import ru.cubeshield.cubecore.player.PlayerCache
 import ru.cubeshield.cubecore.utils.MessageUtil
 import kotlin.math.max
 import kotlin.math.min
@@ -27,12 +28,7 @@ class BankModule : ICubeModule {
     override val name = "Bank Module"
     override val description = "Модуль, отвечающий за банкинг"
 
-    private var cachedPlayersIds = ConcurrentHashMap<String, String>()
-
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
-        eventBus.subscribe<PlayerAuthorized> { (player, playerId, _, _) ->
-            cachedPlayersIds[player.gameProfile.name] = playerId
-        }
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
             registerCommands(dispatcher, apiClient, config, modScope)
         }
@@ -68,7 +64,7 @@ class BankModule : ICubeModule {
                     if (context.source.player == null) return@executes 1
                     val sender = context.source.playerOrException
                     modScope.launch {
-                        val playerId = cachedPlayersIds[sender.gameProfile.name] ?: return@launch
+                        val playerId = PlayerCache.getId(sender.gameProfile.name) ?: return@launch
                         when (val result = apiClient.getPlayerProfile(playerId)) {
                             is ApiResponse.Success -> {
                                 var message = "Ваш баланс: ${result.data.balance} АР"
@@ -130,7 +126,7 @@ class BankModule : ICubeModule {
     }
 
     private fun handleDeposit(player: ServerPlayer, amount: Int, apiClient: ApiClient, modScope: CoroutineScope) {
-        val playerId = cachedPlayersIds[player.gameProfile.name] ?: return
+        val playerId = PlayerCache.getId(player.gameProfile.name) ?: return
         val totalOre = player.inventory.countItem(Items.DIAMOND_ORE) + player.inventory.countItem(Items.DEEPSLATE_DIAMOND_ORE)
 
         if (totalOre < amount) {
@@ -155,7 +151,7 @@ class BankModule : ICubeModule {
     }
 
     private fun handleWithdraw(player: ServerPlayer, amount: Int, apiClient: ApiClient, modScope: CoroutineScope) {
-        val playerId = cachedPlayersIds[player.gameProfile.name] ?: return
+        val playerId = PlayerCache.getId(player.gameProfile.name) ?: return
         modScope.launch {
             when (val result = apiClient.createPlayerBankTransaction(playerId, -amount)) {
                 is ApiResponse.Success -> {
