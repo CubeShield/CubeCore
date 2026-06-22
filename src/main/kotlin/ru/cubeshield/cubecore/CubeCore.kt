@@ -82,6 +82,7 @@ class CubeCore : DedicatedServerModInitializer {
         moduleManager.registerModule(PremiumPermissionModule::class)
         moduleManager.registerModule(SignModule::class)
         moduleManager.registerModule(DiscoveryModule::class)
+        moduleManager.registerModule(IntentHandleModule::class)
 
         LOGGER.info("Initializing all modules")
         moduleManager.initializeAll()

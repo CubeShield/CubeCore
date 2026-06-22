@@ -20,7 +20,18 @@ object ServerHolder {
 }
 
 @Serializable
-data class WSNotification(@SerialName("to_player") val toPlayer: String, val message: String)
+data class WSIntent(
+    val text: String,
+    @SerialName("intent_id") val intentId: String,
+)
+
+@Serializable
+data class WSNotification(
+    @SerialName("to_player") val toPlayer: String,
+    val message: String,
+    val intents: List<WSIntent> = emptyList(),
+)
+
 
 class NotificationModule : ICubeModule {
     override val id = "notification_module"
@@ -85,7 +96,7 @@ class NotificationModule : ICubeModule {
             server.execute {
                 val player = server.playerList.getPlayerByName(notification.toPlayer)
                 if (player != null) {
-                    MessageUtil.send(player, notification.message)
+                    MessageUtil.send(player, notification.message, false, true, notification.intents)
                 }
                 else {
                     logger.info("Player '${notification.toPlayer}' not found, notification not delivered")

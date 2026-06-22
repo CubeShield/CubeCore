@@ -70,6 +70,12 @@ class ApiClient (
         }
     }
 
+    suspend fun activateIntent(playerId: String, intentId: String): ApiResponse<Unit> {
+        return safeApiCall("/players/$playerId/intents/$intentId") {
+            method = HttpMethod.Post
+        }
+    }
+
     suspend fun getPlayer(playername: String): ApiResponse<PlayerReadDto> {
         return safeApiCall("/players/by-playername/$playername") {
             method = HttpMethod.Get
