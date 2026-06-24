@@ -4,8 +4,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val ktor_version: String by project
 
 plugins {
-    kotlin("jvm") version "2.3.21"
-    kotlin("plugin.serialization") version "2.3.21"
+    kotlin("jvm") version "2.4.0"
+    kotlin("plugin.serialization") version "2.4.0"
     id("net.fabricmc.fabric-loom") version "1.16-SNAPSHOT"
     id("maven-publish")
 }
@@ -42,8 +42,7 @@ dependencies {
     implementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
     implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_api_version")}")
 
-    implementation("maven.modrinth:message-api:0.3.5+26.1")
-    implementation("eu.pb4:placeholder-api:3.0.0+26.1")
+    implementation("eu.pb4:placeholder-api:3.1.0-beta.1+26.2")
     implementation("me.lucko:fabric-permissions-api:0.7.0")
 
     shade("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
