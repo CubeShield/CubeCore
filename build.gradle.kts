@@ -45,7 +45,10 @@ dependencies {
     implementation("eu.pb4:placeholder-api:3.1.0-beta.1+26.2")
     implementation("me.lucko:fabric-permissions-api:0.7.0")
 
-    shade("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+    // Provided at runtime by Fabric Language Kotlin (0.8.0) — compile-only here,
+    // never bundled, so it can't shadow FLK's version.
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
+
     shade("io.ktor:ktor-client-core:$ktor_version")
     shade("io.ktor:ktor-client-cio:$ktor_version")
     shade("io.ktor:ktor-client-content-negotiation:$ktor_version")
@@ -87,7 +90,22 @@ tasks.jar {
         rename { "${it}_${project.base.archivesName}" }
     }
 
-    from(shade.map { if (it.isDirectory) it else zipTree(it) }) {
+    // Bundle ktor (and its non-Kotlin transitives) but NOT the Kotlin stdlib,
+    // coroutines, serialization, datetime, atomicfu or kotlinx-io — those are
+    // provided by Fabric Language Kotlin at runtime. Bundling them shadows FLK's
+    // versions and causes NoSuchMethodError on join/shutdown.
+    val bundled = shade.incoming.artifactView {
+        componentFilter { id ->
+            id !is org.gradle.api.artifacts.component.ModuleComponentIdentifier ||
+                id.group !in setOf(
+                    "org.jetbrains.kotlin",
+                    "org.jetbrains.kotlinx",
+                    "org.slf4j", // provided by Minecraft
+                )
+        }
+    }.files
+
+    from(bundled.map { if (it.isDirectory) it else zipTree(it) }) {
         exclude("META-INF/**")
     }
 }
