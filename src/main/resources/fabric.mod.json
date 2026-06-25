@@ -28,7 +28,6 @@
     "fabric-language-kotlin": ">=${kotlin_loader_version}",
     "fabric-api": "*",
     "minecraft": "${minecraft_version}",
-    "fabric-permissions-api-v0": "*",
-    "mcef-modern": "*"
+    "fabric-permissions-api-v0": "*"
   }
 }
