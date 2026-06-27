@@ -26,61 +26,69 @@ class SignPaymentModule : ICubeModule {
 
     override fun initialize(eventBus: EventBus, apiClient: ApiClient, config: ModConfig, modScope: CoroutineScope) {
         BlockEvents.USE_WITHOUT_ITEM.register { state, world, blockPos, player, hitResult ->
+            // Returning null passes the interaction forward to other listeners and
+            // vanilla; returning any InteractionResult marks it as handled and
+            // suppresses vanilla (which would stop chests/tables from opening).
             if (world.isClientSide) {
-                return@register InteractionResult.PASS
+                return@register null
             }
 
+            // Only payment signs are handled here. Everything else (chests, crafting
+            // tables, etc.) must pass through to vanilla so it can open normally.
+            val blockEntity = world.getBlockEntity(hitResult.blockPos)
+            if (blockEntity !is SignBlockEntity) {
+                return@register null
+            }
+
+            val signText = blockEntity.getFrontText().getMessages(false)
+                .joinToString(separator = " ") { it.string }
+            val matches = paymentPattern.findAll(signText)
+            if (!matches.any()) {
+                return@register null
+            }
+
+            val toPlayerId = PlayerCache.getId(player.gameProfile.name) ?: return@register null
+
+            // Cooldown applies only to actual payment signs, not to every block.
             val currentTime = System.currentTimeMillis()
             val lastClickTime = playerCooldowns[player.gameProfile.name]
-
             if (lastClickTime != null && (currentTime - lastClickTime) < COOLDOWN_DURATION_MS) {
                 MessageUtil.send(player, "Пожалуйста подождите...", false, false)
                 return@register InteractionResult.SUCCESS
             }
 
-            val toPlayerId = PlayerCache.getId(player.gameProfile.name) ?: return@register InteractionResult.PASS
-            val blockEntity = world.getBlockEntity(hitResult.blockPos)
-
-            if (blockEntity is SignBlockEntity) {
-                val signText = blockEntity.getFrontText().getMessages(false)
-                    .joinToString(separator = " ") { it.string }
-                val matches = paymentPattern.findAll(signText)
-                if (matches.any()) {
-                    matches.forEach { matchResult ->
-                        val (playername, amountString) = matchResult.destructured
-                        if (player.gameProfile.name == playername) return@register InteractionResult.PASS
-                        val amount = amountString.toIntOrNull() ?: return@register InteractionResult.PASS
-                        playerCooldowns[player.gameProfile.name] = currentTime
-                        modScope.launch {
-                            var fromPlayerId: String? = null
-                            when (val result = apiClient.getPlayer(playername)) {
-                                is ApiResponse.Success -> {
-                                    fromPlayerId = result.data.id
-                                }
-                                is ApiResponse.Error -> {
-                                    MessageUtil.send(player, "Игрока с таким ником не существует", true, false)
-                                }
-                            }
-                            if (fromPlayerId == null) return@launch
-                            MessageUtil.send(player, "Обработка платежа...", false, false)
-                            when (val result = apiClient.createAutoPayBill(fromPlayerId, BillCreateDto(
-                                toPlayerId = toPlayerId,
-                                amount = amount,
-                                note = "Система Берестовых Платежей",
-                                until = kotlin.time.Clock.System.now() + 10.minutes
-                            ))) {
-                                is ApiResponse.Success -> {}
-                                is ApiResponse.Error -> {
-                                    MessageUtil.send(player, "Недостаточно средств", true, false)
-                                }
-                            }
+            matches.forEach { matchResult ->
+                val (playername, amountString) = matchResult.destructured
+                if (player.gameProfile.name == playername) return@register null
+                val amount = amountString.toIntOrNull() ?: return@register null
+                playerCooldowns[player.gameProfile.name] = currentTime
+                modScope.launch {
+                    var fromPlayerId: String? = null
+                    when (val result = apiClient.getPlayer(playername)) {
+                        is ApiResponse.Success -> {
+                            fromPlayerId = result.data.id
                         }
-                        return@register InteractionResult.SUCCESS
+                        is ApiResponse.Error -> {
+                            MessageUtil.send(player, "Игрока с таким ником не существует", true, false)
+                        }
                     }
-                    return@register InteractionResult.SUCCESS
+                    if (fromPlayerId == null) return@launch
+                    MessageUtil.send(player, "Обработка платежа...", false, false)
+                    when (val result = apiClient.createAutoPayBill(fromPlayerId, BillCreateDto(
+                        toPlayerId = toPlayerId,
+                        amount = amount,
+                        note = "Система Берестовых Платежей",
+                        until = kotlin.time.Clock.System.now() + 10.minutes
+                    ))) {
+                        is ApiResponse.Success -> {}
+                        is ApiResponse.Error -> {
+                            MessageUtil.send(player, "Недостаточно средств", true, false)
+                        }
+                    }
                 }
+                return@register InteractionResult.SUCCESS
             }
-            InteractionResult.PASS
+            InteractionResult.SUCCESS
         }
     }
 
