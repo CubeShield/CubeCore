@@ -25,7 +25,8 @@ data class ModConfig (
     data class ModuleConfigs (
         val authModule: AuthModuleConfig = AuthModuleConfig(),
         val playerAfkModule: PlayerAfkModuleConfig = PlayerAfkModuleConfig(),
-        val bankModule: BankModuleConfig = BankModuleConfig()
+        val bankModule: BankModuleConfig = BankModuleConfig(),
+        val elytraDisablerModule: ElytraDisablerModuleConfig = ElytraDisablerModuleConfig()
     )
 
     @Serializable
@@ -51,6 +52,22 @@ data class ModConfig (
     @Serializable
     data class PlayerAfkModuleConfig(
         val afkTimeoutSeconds: Int = 3 * 60
+    )
+
+    @Serializable
+    data class ElytraDisablerModuleConfig(
+        val enable: Boolean = true,
+        val zones: List<ElytraZone> = emptyList()
+    )
+
+    @Serializable
+    data class ElytraZone(
+        val fromX: Int = 0,
+        val fromY: Int = 0,
+        val fromZ: Int = 0,
+        val toX: Int = 0,
+        val toY: Int = 0,
+        val toZ: Int = 0
     )
 
     companion object {
