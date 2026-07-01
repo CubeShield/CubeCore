@@ -59,9 +59,9 @@ class CubeCore : DedicatedServerModInitializer {
                 level = LogLevel.NONE
             }
             install(HttpTimeout) {
-                requestTimeoutMillis = 15000L
-                connectTimeoutMillis = 5000L
-                socketTimeoutMillis = 15000L
+                requestTimeoutMillis = 60000L
+                connectTimeoutMillis = 15000L
+                socketTimeoutMillis = 60000L
             }
         }
         apiClient = ApiClient(httpClient, json, config.api.baseUrl, config.api.apiKey, mainScope)
